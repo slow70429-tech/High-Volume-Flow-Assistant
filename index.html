@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>高量採集器流率驗算助手 V7.4</title>
+<title>高量採集器流率驗算助手 V7.5</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{
@@ -291,23 +291,23 @@ summary{font-weight:800;cursor:pointer}
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.4｜完整清除版</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.5｜手機 Next 修正版</div></div>
 
   <div class="panel">
     <div class="quick-code">
       <div>
         <label>專案編號</label>
-        <input id="projectBase" inputmode="numeric" maxlength="5" placeholder="09509">
+        <input id="projectBase" inputmode="numeric" maxlength="5" enterkeyhint="next" tabindex="1" placeholder="09509">
       </div>
       <div class="fixed-a">A</div>
       <div>
         <label>次數</label>
-        <input id="projectCount" inputmode="numeric" placeholder="102">
+        <input id="projectCount" inputmode="numeric" enterkeyhint="next" tabindex="2" placeholder="102">
       </div>
       <div class="fixed-dash">-</div>
       <div>
         <label>點位</label>
-        <input id="projectPoint" inputmode="numeric" maxlength="2" placeholder="02">
+        <input id="projectPoint" inputmode="numeric" maxlength="2" enterkeyhint="next" tabindex="3" placeholder="02">
       </div>
     </div>
 
@@ -347,11 +347,11 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">大氣溫度 (℃)</div>
-        <input id="preTemp" inputmode="decimal">
+        <input id="preTemp" inputmode="decimal" enterkeyhint="next" tabindex="4">
       </div>
       <div class="flow-cell input-cell">
         <div class="flow-label">大氣壓力 (mmHg)</div>
-        <input id="prePress" inputmode="decimal">
+        <input id="prePress" inputmode="decimal" enterkeyhint="next" tabindex="5">
       </div>
     </div>
 
@@ -359,11 +359,11 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">水柱壓差 ΔH</div>
-        <input id="preDH" inputmode="decimal">
+        <input id="preDH" inputmode="decimal" enterkeyhint="next" tabindex="6">
       </div>
       <div class="flow-cell input-cell">
         <div class="flow-label">浮子流率計讀值 Y</div>
-        <input id="preY" inputmode="decimal" value="1.20">
+        <input id="preY" inputmode="decimal" value="1.20" enterkeyhint="next" tabindex="7">
       </div>
     </div>
 
@@ -385,7 +385,7 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">流率計讀值</div>
-        <input id="preMeter" inputmode="decimal">
+        <input id="preMeter" inputmode="decimal" enterkeyhint="next" tabindex="8">
       </div>
       <div class="flow-cell result-cell">
         <div class="flow-label">校正流率 Q (m³/min)</div>
@@ -400,7 +400,7 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">流率計讀值</div>
-        <input id="postMeter" inputmode="decimal">
+        <input id="postMeter" inputmode="decimal" enterkeyhint="next" tabindex="9">
       </div>
       <div class="flow-cell result-cell">
         <div class="flow-label">校正流率 Q (m³/min)</div>
@@ -411,11 +411,11 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">大氣溫度 (℃)</div>
-        <input id="postTemp" inputmode="decimal">
+        <input id="postTemp" inputmode="decimal" enterkeyhint="next" tabindex="10">
       </div>
       <div class="flow-cell input-cell">
         <div class="flow-label">大氣壓力 (mmHg)</div>
-        <input id="postPress" inputmode="decimal">
+        <input id="postPress" inputmode="decimal" enterkeyhint="next" tabindex="11">
       </div>
     </div>
 
@@ -423,11 +423,11 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">水柱壓差 ΔH</div>
-        <input id="postDH" inputmode="decimal">
+        <input id="postDH" inputmode="decimal" enterkeyhint="next" tabindex="12">
       </div>
       <div class="flow-cell input-cell">
         <div class="flow-label">浮子流率計讀值 Y</div>
-        <input id="postY" inputmode="decimal" value="1.20">
+        <input id="postY" inputmode="decimal" value="1.20" enterkeyhint="next" tabindex="13">
       </div>
     </div>
 
@@ -453,11 +453,11 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">小時</div>
-        <input id="hours" inputmode="numeric">
+        <input id="hours" inputmode="numeric" enterkeyhint="done" tabindex="14">
       </div>
       <div class="flow-cell input-cell">
         <div class="flow-label">分鐘</div>
-        <input id="minutes" inputmode="numeric">
+        <input id="minutes" inputmode="numeric" value="0" enterkeyhint="done" tabindex="15">
       </div>
     </div>
 
@@ -1038,6 +1038,46 @@ async function shareExcel(){
   }
 }
 
+
+// 手機 Next 順序：跳過平常已有預設值的 Y=1.20 與分鐘=0。
+// 若需要修改這三格，仍可直接點欄位手動輸入。
+const MOBILE_NEXT_SEQUENCE=[
+  'projectBase','projectCount','projectPoint',
+  'preTemp','prePress','preDH','preMeter',
+  'postMeter','postTemp','postPress','postDH',
+  'hours'
+];
+
+function focusNextField(currentId){
+  const i=MOBILE_NEXT_SEQUENCE.indexOf(currentId);
+  if(i<0)return;
+  if(i<MOBILE_NEXT_SEQUENCE.length-1){
+    const next=$(MOBILE_NEXT_SEQUENCE[i+1]);
+    if(next){
+      next.focus();
+      if(typeof next.select==='function') next.select();
+    }
+  }else{
+    // 最後一格按下一個/完成時收起鍵盤
+    const active=document.activeElement;
+    if(active && active.blur) active.blur();
+  }
+}
+
+MOBILE_NEXT_SEQUENCE.forEach(id=>{
+  const field=$(id);
+  if(!field)return;
+  field.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      focusNextField(id);
+    }
+  });
+});
+
+// 若使用者主動點進預設欄位，仍保留正常編輯。
+// Y 與分鐘不加入自動 Next 鏈，避免現場多按三次。
+
 // Events
 ['preTemp','prePress','preDH','preY','preMeter',
  'postMeter','postTemp','postPress','postDH','postY',
@@ -1077,11 +1117,12 @@ $('clearBtn').addEventListener('click',()=>{
   // 現場輸入全部清除
   ['preTemp','prePress','preDH','preMeter',
    'postMeter','postTemp','postPress','postDH',
-   'hours','minutes'].forEach(id=>$(id).value='');
+   'hours'].forEach(id=>$(id).value='');
 
-  // 浮子讀值保留現場預設值 1.20
+  // 現場預設值保留
   $('preY').value='1.20';
   $('postY').value='1.20';
+  $('minutes').value='0';
 
   $('exportStatus').textContent='';
   calc();
@@ -1091,6 +1132,9 @@ $('clearBtn').addEventListener('click',()=>{
 });
 
 // Start
+if(!$('preY').value)$('preY').value='1.20';
+if(!$('postY').value)$('postY').value='1.20';
+if($('minutes').value==='')$('minutes').value='0';
 scanGithub();
 </script>
 </body>
