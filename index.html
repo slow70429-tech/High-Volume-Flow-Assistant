@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>高量採集器流率驗算助手 V7.2</title>
+<title>高量採集器流率驗算助手 V7.3</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{
@@ -168,11 +168,130 @@ summary{font-weight:800;cursor:pointer}
   overflow-wrap:anywhere;
 }
 
+
+.excel-flow-block{
+  padding:0;
+  overflow:hidden;
+  border-radius:10px;
+}
+.flow-title{
+  background:#f3f5f5;
+  border-bottom:1px solid var(--grid);
+  padding:7px 10px;
+  font-weight:900;
+  font-size:17px;
+  color:#263238;
+}
+.flow-title.small-title{
+  font-size:15px;
+}
+.flow-subtitle{
+  text-align:center;
+  font-size:12px;
+  font-weight:800;
+  color:#4c5960;
+  background:#f8f9f9;
+  border-top:1px solid var(--grid);
+  border-bottom:1px solid var(--grid);
+  padding:4px 6px;
+}
+.flow-grid{
+  display:grid;
+  border-bottom:1px solid var(--grid);
+}
+.flow-grid:last-child{
+  border-bottom:0;
+}
+.flow-grid.two{
+  grid-template-columns:1fr 1fr;
+}
+.flow-grid.three{
+  grid-template-columns:1fr 1fr 1fr;
+}
+.flow-cell{
+  min-width:0;
+  border-right:1px solid var(--grid);
+  padding:6px 7px;
+  min-height:62px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.flow-cell:last-child{
+  border-right:0;
+}
+.flow-label{
+  text-align:center;
+  font-size:11px;
+  line-height:1.2;
+  color:#49575f;
+  margin-bottom:5px;
+}
+.flow-cell input{
+  min-height:40px;
+  border:0;
+  border-radius:6px;
+  text-align:center;
+  font-size:19px;
+  font-weight:800;
+  padding:4px 5px;
+}
+.input-cell{
+  background:var(--input);
+}
+.input-cell input{
+  background:rgba(255,255,255,.16);
+}
+.result-cell{
+  background:#fff;
+}
+.flow-result{
+  text-align:center;
+  font-size:20px;
+  font-weight:900;
+  min-height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.results-row .flow-cell{
+  min-height:68px;
+}
+.compact-time{
+  padding:0;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:8px;
+}
+.mail-panel{
+  margin-bottom:96px !important;
+}
+.mail-subject-row{
+  grid-template-columns:1fr;
+  gap:7px;
+}
+.copy-subject{
+  width:100%;
+  min-height:44px;
+}
+#subjectPreview{
+  display:block;
+  padding:4px 2px 2px;
+  font-size:14px;
+}
+@media(max-width:430px){
+  .flow-cell{padding:5px 4px;min-height:58px}
+  .flow-label{font-size:10px}
+  .flow-cell input{font-size:18px}
+  .flow-result{font-size:18px}
+  .results-row .flow-cell{min-height:64px}
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.2｜寄信流程版</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.3｜Excel 排列版</div></div>
 
   <div class="panel">
     <div class="quick-code">
@@ -222,130 +341,135 @@ summary{font-weight:800;cursor:pointer}
 
   <div class="sheet-title">粒狀物流率驗算紀錄</div>
 
-  <div class="excel-form">
-    <div class="excel-head">
-      <div class="excel-side">採樣前</div>
-      <div class="excel-main">
-        <div class="xrow x3">
-          <div class="xcell xinput">
-            <div class="xlabel">大氣溫度(℃)</div>
-            <input id="preTemp" inputmode="decimal">
-          </div>
-          <div class="xcell xinput">
-            <div class="xlabel">大氣壓力(mmHg)</div>
-            <input id="prePress" inputmode="decimal">
-          </div>
-          <div class="xcell">
-            <div class="xlabel">流量偏差百分比<br>(≤±7%)</div>
-            <div class="xresult" id="preErr">—</div>
-          </div>
-        </div>
+  <div class="excel-form excel-flow-block">
+    <div class="flow-title">採樣前</div>
 
-        <div class="subhead">查核流率</div>
-        <div class="xrow x4">
-          <div class="xcell xinput">
-            <div class="xlabel">水柱壓差 ΔH<br><span class="xunit">(inH₂O)</span></div>
-            <input id="preDH" inputmode="decimal">
-          </div>
-          <div class="xcell xinput">
-            <div class="xlabel">浮子流率計讀值 Y</div>
-            <input id="preY" inputmode="decimal" value="1.20">
-          </div>
-          <div class="xcell">
-            <div class="xlabel">實際流量 Qstd<br><span class="xunit">(m³/min)</span></div>
-            <div class="xresult small" id="preQstd">—</div>
-          </div>
-          <div class="xcell">
-            <div class="xlabel">迴歸之流量 Ycal<br><span class="xunit">(m³/min)</span></div>
-            <div class="xresult small" id="preYcal">—</div>
-          </div>
-        </div>
+    <div class="flow-grid two">
+      <div class="flow-cell input-cell">
+        <div class="flow-label">大氣溫度 (℃)</div>
+        <input id="preTemp" inputmode="decimal">
+      </div>
+      <div class="flow-cell input-cell">
+        <div class="flow-label">大氣壓力 (mmHg)</div>
+        <input id="prePress" inputmode="decimal">
+      </div>
+    </div>
 
-        <div class="xrow x2">
-          <div class="xcell xinput">
-            <div class="xlabel">流率計讀值</div>
-            <input id="preMeter" inputmode="decimal">
-          </div>
-          <div class="xcell">
-            <div class="xlabel">校正流率 Q <span class="xunit">(m³/min)</span></div>
-            <div class="xresult" id="preQ">—</div>
-          </div>
-        </div>
+    <div class="flow-subtitle">查核流率</div>
+    <div class="flow-grid two">
+      <div class="flow-cell input-cell">
+        <div class="flow-label">水柱壓差 ΔH</div>
+        <input id="preDH" inputmode="decimal">
+      </div>
+      <div class="flow-cell input-cell">
+        <div class="flow-label">浮子流率計讀值 Y</div>
+        <input id="preY" inputmode="decimal" value="1.20">
+      </div>
+    </div>
+
+    <div class="flow-grid three results-row">
+      <div class="flow-cell result-cell">
+        <div class="flow-label">實際流量 Qstd</div>
+        <div class="flow-result" id="preQstd">—</div>
+      </div>
+      <div class="flow-cell result-cell">
+        <div class="flow-label">迴歸流量 Ycal</div>
+        <div class="flow-result" id="preYcal">—</div>
+      </div>
+      <div class="flow-cell result-cell">
+        <div class="flow-label">偏差 %E</div>
+        <div class="flow-result" id="preErr">—</div>
+      </div>
+    </div>
+
+    <div class="flow-grid two">
+      <div class="flow-cell input-cell">
+        <div class="flow-label">流率計讀值</div>
+        <input id="preMeter" inputmode="decimal">
+      </div>
+      <div class="flow-cell result-cell">
+        <div class="flow-label">校正流率 Q (m³/min)</div>
+        <div class="flow-result" id="preQ">—</div>
       </div>
     </div>
   </div>
 
-  <div class="excel-form">
-    <div class="excel-head">
-      <div class="excel-side">採樣後</div>
-      <div class="excel-main">
-        <div class="xrow x2">
-          <div class="xcell xinput">
-            <div class="xlabel">流率計讀值</div>
-            <input id="postMeter" inputmode="decimal">
-          </div>
-          <div class="xcell">
-            <div class="xlabel">校正流率 Q <span class="xunit">(m³/min)</span></div>
-            <div class="xresult" id="postQ">—</div>
-          </div>
-        </div>
+  <div class="excel-form excel-flow-block">
+    <div class="flow-title">採樣後</div>
 
-        <div class="xrow x3">
-          <div class="xcell xinput">
-            <div class="xlabel">大氣溫度(℃)</div>
-            <input id="postTemp" inputmode="decimal">
-          </div>
-          <div class="xcell xinput">
-            <div class="xlabel">大氣壓力(mmHg)</div>
-            <input id="postPress" inputmode="decimal">
-          </div>
-          <div class="xcell">
-            <div class="xlabel">流量偏差百分比<br>(≤±7%)</div>
-            <div class="xresult" id="postErr">—</div>
-          </div>
-        </div>
+    <div class="flow-grid two">
+      <div class="flow-cell input-cell">
+        <div class="flow-label">流率計讀值</div>
+        <input id="postMeter" inputmode="decimal">
+      </div>
+      <div class="flow-cell result-cell">
+        <div class="flow-label">校正流率 Q (m³/min)</div>
+        <div class="flow-result" id="postQ">—</div>
+      </div>
+    </div>
 
-        <div class="subhead">查核流率</div>
-        <div class="xrow x4">
-          <div class="xcell xinput">
-            <div class="xlabel">水柱壓差 ΔH<br><span class="xunit">(inH₂O)</span></div>
-            <input id="postDH" inputmode="decimal">
-          </div>
-          <div class="xcell xinput">
-            <div class="xlabel">浮子流率計讀值 Y</div>
-            <input id="postY" inputmode="decimal" value="1.20">
-          </div>
-          <div class="xcell">
-            <div class="xlabel">實際流量 Qstd<br><span class="xunit">(m³/min)</span></div>
-            <div class="xresult small" id="postQstd">—</div>
-          </div>
-          <div class="xcell">
-            <div class="xlabel">迴歸之流量 Ycal<br><span class="xunit">(m³/min)</span></div>
-            <div class="xresult small" id="postYcal">—</div>
-          </div>
-        </div>
+    <div class="flow-grid two">
+      <div class="flow-cell input-cell">
+        <div class="flow-label">大氣溫度 (℃)</div>
+        <input id="postTemp" inputmode="decimal">
+      </div>
+      <div class="flow-cell input-cell">
+        <div class="flow-label">大氣壓力 (mmHg)</div>
+        <input id="postPress" inputmode="decimal">
+      </div>
+    </div>
+
+    <div class="flow-subtitle">查核流率</div>
+    <div class="flow-grid two">
+      <div class="flow-cell input-cell">
+        <div class="flow-label">水柱壓差 ΔH</div>
+        <input id="postDH" inputmode="decimal">
+      </div>
+      <div class="flow-cell input-cell">
+        <div class="flow-label">浮子流率計讀值 Y</div>
+        <input id="postY" inputmode="decimal" value="1.20">
+      </div>
+    </div>
+
+    <div class="flow-grid three results-row">
+      <div class="flow-cell result-cell">
+        <div class="flow-label">實際流量 Qstd</div>
+        <div class="flow-result" id="postQstd">—</div>
+      </div>
+      <div class="flow-cell result-cell">
+        <div class="flow-label">迴歸流量 Ycal</div>
+        <div class="flow-result" id="postYcal">—</div>
+      </div>
+      <div class="flow-cell result-cell">
+        <div class="flow-label">偏差 %E</div>
+        <div class="flow-result" id="postErr">—</div>
       </div>
     </div>
   </div>
 
-  <div class="time-box">
-    <div class="time-row">
-      <div class="tcell tlabel">採樣時間</div>
-      <div class="tcell tinput"><input id="hours" inputmode="numeric"></div>
-      <div class="tcell tlabel">小時</div>
-      <div class="tcell tinput"><input id="minutes" inputmode="numeric"></div>
+  <div class="time-box compact-time">
+    <div class="flow-title small-title">採樣時間 / 空氣量</div>
+
+    <div class="flow-grid two">
+      <div class="flow-cell input-cell">
+        <div class="flow-label">小時</div>
+        <input id="hours" inputmode="numeric">
+      </div>
+      <div class="flow-cell input-cell">
+        <div class="flow-label">分鐘</div>
+        <input id="minutes" inputmode="numeric">
+      </div>
     </div>
-    <div class="time-row">
-      <div class="tcell tlabel">吸引空氣量（V）</div>
-      <div class="tcell tresult" id="V">—</div>
-      <div class="tcell tlabel">m³</div>
-      <div class="tcell"></div>
-    </div>
-    <div class="time-row">
-      <div class="tcell tlabel">吸引空氣量（Vn）</div>
-      <div class="tcell tresult" id="Vn">—</div>
-      <div class="tcell tlabel">Nm³</div>
-      <div class="tcell"></div>
+
+    <div class="flow-grid two">
+      <div class="flow-cell result-cell">
+        <div class="flow-label">吸引空氣量 V (m³)</div>
+        <div class="flow-result" id="V">—</div>
+      </div>
+      <div class="flow-cell result-cell">
+        <div class="flow-label">標準狀態空氣量 Vn (Nm³)</div>
+        <div class="flow-result" id="Vn">—</div>
+      </div>
     </div>
   </div>
 
@@ -755,7 +879,7 @@ function calcBlock(prefix){
   $(prefix+'Qstd').textContent=show(qstd,2);
   $(prefix+'Ycal').textContent=show(ycal,2);
   $(prefix+'Err').textContent=Number.isFinite(err)?show(err,1):'—';
-  $(prefix+'Err').className='xresult '+(Number.isFinite(err)?(Math.abs(err)<=7?'pass':'fail'):'');
+  $(prefix+'Err').className='flow-result '+(Number.isFinite(err)?(Math.abs(err)<=7?'pass':'fail'):'');
   $(prefix+'Q').textContent=show(Q,2);
   return {T,Pa,Q};
 }
