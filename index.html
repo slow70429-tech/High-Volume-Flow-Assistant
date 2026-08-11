@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>高量採集器流率驗算助手 V7.1</title>
+<title>高量採集器流率驗算助手 V7.2</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{
@@ -150,11 +150,29 @@ summary{font-weight:800;cursor:pointer}
   #projectPreview{font-size:17px}
 }
 
+
+.code-preview{grid-template-columns:1fr}
+.mail-panel{margin-bottom:8px}
+.mail-subject-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:center;
+  background:#f4f7f8;
+  border:1px solid #d7dee2;
+  border-radius:9px;
+  padding:8px;
+}
+#subjectPreview{
+  font-size:15px;
+  overflow-wrap:anywhere;
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.1｜現場快速版</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.2｜寄信流程版</div></div>
 
   <div class="panel">
     <div class="quick-code">
@@ -179,10 +197,6 @@ summary{font-weight:800;cursor:pointer}
         <span class="preview-label">完整編號</span>
         <strong id="projectPreview">—</strong>
       </div>
-      <button class="secondary copy-subject" id="copySubjectBtn">複製主旨</button>
-    </div>
-    <div class="subject-preview">
-      郵件主旨：<strong id="subjectPreview">高量採集器_</strong>
     </div>
     <div class="toolbar">
       <div><label>目前儀器</label><select id="profile"><option>讀取中...</option></select></div>
@@ -338,6 +352,15 @@ summary{font-weight:800;cursor:pointer}
   <div class="panel" style="margin-top:12px">
     <div id="exportStatus" class="small-note">輸入「5碼專案＋次數＋點位」後會自動組成完整編號；匯出檔名自動接上校正檔原始名稱，並可一鍵複製郵件主旨。</div>
   </div>
+</div>
+
+<div class="panel mail-panel">
+  <label>郵件主旨</label>
+  <div class="mail-subject-row">
+    <strong id="subjectPreview">高量採集器_</strong>
+    <button class="secondary copy-subject" id="copySubjectBtn">複製主旨</button>
+  </div>
+  <div class="small-note">分享 Excel 到 Outlook 後，直接貼上這個主旨即可。</div>
 </div>
 
 <div class="sticky-actions">
