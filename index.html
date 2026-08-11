@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>高量採集器流率驗算助手 V7.5</title>
+<title>高量採集器流率驗算助手 V7.6</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{
@@ -291,7 +291,7 @@ summary{font-weight:800;cursor:pointer}
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.5｜手機 Next 修正版</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.6｜iPhone Next 強制順序版</div></div>
 
   <div class="panel">
     <div class="quick-code">
@@ -319,7 +319,7 @@ summary{font-weight:800;cursor:pointer}
     </div>
     <div class="toolbar">
       <div><label>目前儀器</label><select id="profile"><option>讀取中...</option></select></div>
-      <div><label>目前校正檔</label><input id="templateName" readonly placeholder="正在掃描 GitHub..."></div>
+      <div><label>目前校正檔</label><input id="templateName" tabindex="-1" readonly placeholder="正在掃描 GitHub..."></div>
     </div>
     <div class="buttons" style="grid-template-columns:1fr">
       <button class="secondary" id="rescanBtn">重新讀取 GitHub 校正檔</button>
@@ -329,12 +329,12 @@ summary{font-weight:800;cursor:pointer}
     <details>
       <summary>查看目前校正參數</summary>
       <div class="calgrid">
-        <div><label>儀器序號</label><input id="instrument" readonly></div>
-        <div><label>流量計編號</label><input id="flowmeter" readonly></div>
-        <div><label>a₀</label><input id="a0" readonly></div>
-        <div><label>b₀</label><input id="b0" readonly></div>
-        <div><label>迴歸斜率</label><input id="slope" readonly></div>
-        <div><label>迴歸截距</label><input id="intercept" readonly></div>
+        <div><label>儀器序號</label><input id="instrument" tabindex="-1" readonly></div>
+        <div><label>流量計編號</label><input id="flowmeter" tabindex="-1" readonly></div>
+        <div><label>a₀</label><input id="a0" tabindex="-1" readonly></div>
+        <div><label>b₀</label><input id="b0" tabindex="-1" readonly></div>
+        <div><label>迴歸斜率</label><input id="slope" tabindex="-1" readonly></div>
+        <div><label>迴歸截距</label><input id="intercept" tabindex="-1" readonly></div>
       </div>
     </details>
   </div>
@@ -363,7 +363,7 @@ summary{font-weight:800;cursor:pointer}
       </div>
       <div class="flow-cell input-cell">
         <div class="flow-label">浮子流率計讀值 Y</div>
-        <input id="preY" inputmode="decimal" value="1.20" enterkeyhint="next" tabindex="7">
+        <input id="preY" inputmode="decimal" value="1.20" enterkeyhint="next" tabindex="-1">
       </div>
     </div>
 
@@ -385,7 +385,7 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">流率計讀值</div>
-        <input id="preMeter" inputmode="decimal" enterkeyhint="next" tabindex="8">
+        <input id="preMeter" inputmode="decimal" enterkeyhint="next" tabindex="7">
       </div>
       <div class="flow-cell result-cell">
         <div class="flow-label">校正流率 Q (m³/min)</div>
@@ -400,7 +400,7 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">流率計讀值</div>
-        <input id="postMeter" inputmode="decimal" enterkeyhint="next" tabindex="9">
+        <input id="postMeter" inputmode="decimal" enterkeyhint="next" tabindex="8">
       </div>
       <div class="flow-cell result-cell">
         <div class="flow-label">校正流率 Q (m³/min)</div>
@@ -411,11 +411,11 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">大氣溫度 (℃)</div>
-        <input id="postTemp" inputmode="decimal" enterkeyhint="next" tabindex="10">
+        <input id="postTemp" inputmode="decimal" enterkeyhint="next" tabindex="9">
       </div>
       <div class="flow-cell input-cell">
         <div class="flow-label">大氣壓力 (mmHg)</div>
-        <input id="postPress" inputmode="decimal" enterkeyhint="next" tabindex="11">
+        <input id="postPress" inputmode="decimal" enterkeyhint="next" tabindex="10">
       </div>
     </div>
 
@@ -423,11 +423,11 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">水柱壓差 ΔH</div>
-        <input id="postDH" inputmode="decimal" enterkeyhint="next" tabindex="12">
+        <input id="postDH" inputmode="decimal" enterkeyhint="next" tabindex="11">
       </div>
       <div class="flow-cell input-cell">
         <div class="flow-label">浮子流率計讀值 Y</div>
-        <input id="postY" inputmode="decimal" value="1.20" enterkeyhint="next" tabindex="13">
+        <input id="postY" inputmode="decimal" value="1.20" enterkeyhint="next" tabindex="-1">
       </div>
     </div>
 
@@ -453,11 +453,11 @@ summary{font-weight:800;cursor:pointer}
     <div class="flow-grid two">
       <div class="flow-cell input-cell">
         <div class="flow-label">小時</div>
-        <input id="hours" inputmode="numeric" enterkeyhint="done" tabindex="14">
+        <input id="hours" inputmode="numeric" enterkeyhint="done" tabindex="12">
       </div>
       <div class="flow-cell input-cell">
         <div class="flow-label">分鐘</div>
-        <input id="minutes" inputmode="numeric" value="0" enterkeyhint="done" tabindex="15">
+        <input id="minutes" inputmode="numeric" value="0" enterkeyhint="done" tabindex="-1">
       </div>
     </div>
 
@@ -1039,44 +1039,120 @@ async function shareExcel(){
 }
 
 
-// 手機 Next 順序：跳過平常已有預設值的 Y=1.20 與分鐘=0。
-// 若需要修改這三格，仍可直接點欄位手動輸入。
-const MOBILE_NEXT_SEQUENCE=[
+// iPhone Safari / WebKit 的鍵盤附件列「上一個 / 下一個」
+// 在長頁面可能跳過畫面外的輸入欄位。
+// 這裡不依賴 Safari 自己的結果，而是檢查每次焦點移動，必要時拉回正確順序。
+const NAV_SEQUENCE=[
   'projectBase','projectCount','projectPoint',
   'preTemp','prePress','preDH','preMeter',
   'postMeter','postTemp','postPress','postDH',
   'hours'
 ];
 
-function focusNextField(currentId){
-  const i=MOBILE_NEXT_SEQUENCE.indexOf(currentId);
-  if(i<0)return;
-  if(i<MOBILE_NEXT_SEQUENCE.length-1){
-    const next=$(MOBILE_NEXT_SEQUENCE[i+1]);
-    if(next){
-      next.focus();
-      if(typeof next.select==='function') next.select();
-    }
-  }else{
-    // 最後一格按下一個/完成時收起鍵盤
-    const active=document.activeElement;
-    if(active && active.blur) active.blur();
-  }
+// 預設欄位仍可手動點擊修改，但不參加 Next 鏈。
+const FIELD_POSITION={
+  projectBase:0,
+  projectCount:1,
+  projectPoint:2,
+  preTemp:3,
+  prePress:4,
+  preDH:5,
+  preY:5.5,
+  preMeter:6,
+  postMeter:7,
+  postTemp:8,
+  postPress:9,
+  postDH:10,
+  postY:10.5,
+  hours:11,
+  minutes:11.5
+};
+
+let currentNavId=null;
+let manualFocusUntil=0;
+let correctingFocus=false;
+
+function markManualFocus(){
+  manualFocusUntil=Date.now()+900;
+}
+document.addEventListener('touchstart',markManualFocus,true);
+document.addEventListener('pointerdown',markManualFocus,true);
+
+function focusExact(id){
+  const target=$(id);
+  if(!target)return;
+  correctingFocus=true;
+  requestAnimationFrame(()=>{
+    target.focus({preventScroll:false});
+    if(typeof target.select==='function')target.select();
+    currentNavId=id;
+    setTimeout(()=>{correctingFocus=false;},0);
+  });
 }
 
-MOBILE_NEXT_SEQUENCE.forEach(id=>{
+function expectedNeighbor(fromId,direction){
+  const i=NAV_SEQUENCE.indexOf(fromId);
+  if(i<0)return null;
+  const j=i+direction;
+  return (j>=0 && j<NAV_SEQUENCE.length)?NAV_SEQUENCE[j]:null;
+}
+
+// 監看所有欄位焦點。
+// 手指直接點某格：尊重使用者選擇。
+// 鍵盤附件列 ↑↓ 造成的焦點變更：若跳太遠，強制導回上一/下一個正確欄位。
+document.addEventListener('focusin',e=>{
+  if(correctingFocus)return;
+  const id=e.target && e.target.id;
+  if(!(id in FIELD_POSITION))return;
+
+  const manual=Date.now()<manualFocusUntil;
+
+  if(manual || !currentNavId || !(currentNavId in FIELD_POSITION)){
+    if(NAV_SEQUENCE.includes(id))currentNavId=id;
+    return;
+  }
+
+  if(id===currentNavId)return;
+
+  const fromPos=FIELD_POSITION[currentNavId];
+  const toPos=FIELD_POSITION[id];
+  const direction=toPos>fromPos?1:-1;
+  const expected=expectedNeighbor(currentNavId,direction);
+
+  if(!expected){
+    // 已經在最後一格再按下一個，直接收鍵盤。
+    if(direction>0 && e.target.blur)e.target.blur();
+    return;
+  }
+
+  if(id!==expected){
+    e.preventDefault();
+    focusExact(expected);
+  }else{
+    currentNavId=id;
+  }
+},true);
+
+// 若鍵盤有 Enter / Done，也使用同一條固定順序。
+NAV_SEQUENCE.forEach(id=>{
   const field=$(id);
   if(!field)return;
   field.addEventListener('keydown',e=>{
-    if(e.key==='Enter'){
-      e.preventDefault();
-      focusNextField(id);
-    }
+    if(e.key!=='Enter')return;
+    e.preventDefault();
+    const next=expectedNeighbor(id,1);
+    if(next)focusExact(next);
+    else field.blur();
   });
 });
 
-// 若使用者主動點進預設欄位，仍保留正常編輯。
-// Y 與分鐘不加入自動 Next 鏈，避免現場多按三次。
+// 初次手動點到任一正式輸入欄位時，建立目前位置。
+NAV_SEQUENCE.forEach(id=>{
+  const field=$(id);
+  if(field)field.addEventListener('focus',()=>{
+    if(Date.now()<manualFocusUntil)currentNavId=id;
+  });
+});
 
 // Events
 ['preTemp','prePress','preDH','preY','preMeter',
