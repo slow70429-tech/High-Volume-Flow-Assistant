@@ -57,7 +57,7 @@ summary{font-weight:700;cursor:pointer}
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V2｜Excel 精度模式</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V2.1｜Excel 精度模式</div></div>
 
   <div class="panel">
     <div class="toolbar">
@@ -283,16 +283,41 @@ function calc(){
   const pre=calcBlock('pre'),post=calcBlock('post');
   const h=num('hours'),mins=num('minutes');
   let V=null,Vn=null;
-  if(Number.isFinite(h)&&Number.isFinite(mins)&&Number.isFinite(pre.Q)&&Number.isFinite(post.Q)){
-    const total=h*60+mins,avgQ=round((pre.Q+post.Q)/2,2);
-    // 完全照原 Excel：V 只在小時 > 3；Vn 只在小時 < 3。
-    if(h>3) V=avgQ*total;
-    if(h<3 && [pre.T,post.T,pre.Pa,post.Pa].every(Number.isFinite)){
-      Vn=(avgQ*total)*(273/(273+(pre.T*0.5+post.T*0.5)))*((pre.Pa*0.5+post.Pa*0.5)/760);
+
+  const timeOK = Number.isFinite(h) && Number.isFinite(mins);
+  const flowOK = Number.isFinite(pre.Q) && Number.isFinite(post.Q);
+
+  if(timeOK && flowOK){
+    const totalMinutes = h*60 + mins;
+
+    // 原 Excel 的 O13 / O18 都是校正流率 Q，且儲存格本身已 ROUND 到小數 2 位。
+    const avgQ = (pre.Q + post.Q) / 2;
+    const sampledVolume = avgQ * totalMinutes;
+
+    // 原 Excel：
+    // M27 = IF(M26>3, AVERAGE(O13,O18)*(M26*60+O26), "---")
+    if(h > 3){
+      V = sampledVolume;
+    }
+
+    // 原 Excel：
+    // M28 = IF(M26<3, sampledVolume * 溫壓修正, "---")
+    if(h < 3 &&
+       Number.isFinite(pre.T) && Number.isFinite(post.T) &&
+       Number.isFinite(pre.Pa) && Number.isFinite(post.Pa)){
+      const avgTemp = pre.T*0.5 + post.T*0.5;
+      const avgPress = pre.Pa*0.5 + post.Pa*0.5;
+      Vn = sampledVolume * (273/(273+avgTemp)) * (avgPress/760);
     }
   }
-  $('V').textContent=Number.isFinite(V)?show(V,2):(Number.isFinite(h)&&h<=3?'---':'—');
-  $('Vn').textContent=Number.isFinite(Vn)?show(Vn,2):(Number.isFinite(h)&&h>=3?'---':'—');
+
+  if(!timeOK || !flowOK){
+    $('V').textContent='—';
+    $('Vn').textContent='—';
+  }else{
+    $('V').textContent = h>3 && Number.isFinite(V) ? show(V,2) : '---';
+    $('Vn').textContent = h<3 && Number.isFinite(Vn) ? show(Vn,2) : '---';
+  }
 }
 ['preTemp','prePress','preDH','preY','preMeter','postMeter','postTemp','postPress','postDH','postY','hours','minutes'].forEach(id=>$(id).addEventListener('input',calc));
 $('profile').onchange=e=>{current=e.target.value;load()};
