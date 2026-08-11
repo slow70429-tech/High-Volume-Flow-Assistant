@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>高量採集器流率驗算助手 V1</title>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+:root{--bg:#f3f6f8;--card:#fff;--text:#15212b;--muted:#667681;--line:#d7e0e5;--green:#eef5df;--accent:#176b4d;--warn:#a15c00;--bad:#b42318}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
+.wrap{max-width:760px;margin:auto;padding:14px 12px 40px}
+h1{font-size:22px;margin:4px 0 2px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px;margin:10px 0;box-shadow:0 1px 2px #00000008}
+.card h2{font-size:17px;margin:0 0 12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+label{display:block;font-size:13px;color:#40505a;margin:5px 0}
+input,select,button{font:inherit}
+input,select{width:100%;min-height:48px;border:1px solid #bfcbd2;border-radius:10px;padding:10px 11px;font-size:18px;background:#fff}
+.input{background:var(--green)}
+button{border:0;border-radius:11px;padding:12px 14px;font-weight:700;cursor:pointer;min-height:46px}
+.primary{background:var(--accent);color:#fff}
+.secondary{background:#e8eef1;color:#23323b}
+.danger{background:#fbe9e7;color:var(--bad)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btns button{flex:1;min-width:130px}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.box{border:1px solid var(--line);border-radius:11px;padding:10px;background:#fbfcfd}
+.box span{font-size:12px;color:var(--muted)}
+.box strong{display:block;font-size:21px;margin-top:3px}
+.pass{color:var(--accent)} .fail{color:var(--bad)}
+.note{font-size:12px;line-height:1.5;color:var(--muted)}
+.status{padding:9px 10px;border-radius:9px;background:#eef6f2;font-size:13px;margin:8px 0}
+.warn{background:#fff5e6;color:#744100}
+.hidden{display:none}
+details{border-top:1px dashed var(--line);margin-top:12px;padding-top:10px}
+summary{cursor:pointer;font-weight:700}
+.small input{font-size:16px;min-height:42px}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+@media(max-width:520px){.row,.row3{grid-template-columns:1fr 1fr}.kpi{grid-template-columns:1fr 1fr}h1{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>高量採集器流率驗算助手</h1>
+  <div class="sub">V1｜校正資料保存 → 現場輸入 → 即時計算 → 回填匯出 Excel</div>
+
+  <div class="card">
+    <h2>① 選擇儀器 / 校正檔</h2>
+    <div class="row">
+      <div><label>儀器</label><select id="profileSelect"></select></div>
+      <div><label>目前校正檔</label><input id="templateName" readonly placeholder="尚未匯入 Excel"></div>
+    </div>
+    <div id="importStatus" class="status warn">第一次使用：請先把有 TSP 密碼的 Excel 用 Excel 開啟後，另存為「無密碼 .xlsx」，再匯入。</div>
+    <div class="btns">
+      <button class="primary" id="importBtn">匯入 / 更新校正 Excel</button>
+      <button class="secondary" id="newBtn">新增 / 改名儀器</button>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx" class="hidden">
+
+    <details>
+      <summary>校正參數（匯入後確認一次即可）</summary>
+      <div class="row small">
+        <div><label>儀器序號</label><input id="instrument" placeholder="P3"></div>
+        <div><label>流量計編號</label><input id="flowmeter" placeholder="FU3"></div>
+        <div><label>孔口校正式 a₀</label><input id="a0" inputmode="decimal" placeholder="2.0185"></div>
+        <div><label>孔口校正式 b₀</label><input id="b0" inputmode="decimal" placeholder="-0.0068"></div>
+        <div><label>迴歸斜率</label><input id="slope" inputmode="decimal" placeholder="0.9501"></div>
+        <div><label>迴歸截距</label><input id="intercept" inputmode="decimal" placeholder="0.0592"></div>
+      </div>
+      <div class="btns" style="margin-top:10px"><button class="secondary" id="saveCalBtn">儲存校正參數</button></div>
+      <div class="note">P3/FU3 圖片中的測試值：a₀=2.0185、b₀=-0.0068、迴歸斜率=0.9501、截距=0.0592。正式使用仍以每次匯入的校正檔為準。</div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>② 採樣前</h2>
+    <div class="row">
+      <div><label>大氣溫度 (°C)</label><input class="input live" id="preTemp" inputmode="decimal"></div>
+      <div><label>大氣壓力 (mmHg)</label><input class="input live" id="prePress" inputmode="decimal"></div>
+      <div><label>水柱壓差 ΔH (inH₂O)</label><input class="input live" id="preDH" inputmode="decimal"></div>
+      <div><label>浮子流率計讀值 Y</label><input class="input live" id="preY" inputmode="decimal"></div>
+      <div><label>流率計讀值</label><input class="input live" id="preMeter" inputmode="decimal"></div>
+    </div>
+    <hr>
+    <div class="kpi">
+      <div class="box"><span>實際流量 Qstd</span><strong id="preQstd">—</strong></div>
+      <div class="box"><span>迴歸流量 Ycal</span><strong id="preYcal">—</strong></div>
+      <div class="box"><span>流量偏差 %E</span><strong id="preErr">—</strong></div>
+      <div class="box"><span>校正流率 Q</span><strong id="preQ">—</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>③ 採樣後</h2>
+    <div class="row">
+      <div><label>流率計讀值</label><input class="input live" id="postMeter" inputmode="decimal"></div>
+      <div><label>大氣溫度 (°C)</label><input class="input live" id="postTemp" inputmode="decimal"></div>
+      <div><label>大氣壓力 (mmHg)</label><input class="input live" id="postPress" inputmode="decimal"></div>
+      <div><label>水柱壓差 ΔH (inH₂O)</label><input class="input live" id="postDH" inputmode="decimal"></div>
+      <div><label>浮子流率計讀值 Y</label><input class="input live" id="postY" inputmode="decimal"></div>
+    </div>
+    <hr>
+    <div class="kpi">
+      <div class="box"><span>實際流量 Qstd</span><strong id="postQstd">—</strong></div>
+      <div class="box"><span>迴歸流量 Ycal</span><strong id="postYcal">—</strong></div>
+      <div class="box"><span>流量偏差 %E</span><strong id="postErr">—</strong></div>
+      <div class="box"><span>校正流率 Q</span><strong id="postQ">—</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>④ 採樣時間 / 體積</h2>
+    <div class="row">
+      <div><label>小時</label><input class="input live" id="hours" inputmode="numeric"></div>
+      <div><label>分鐘</label><input class="input live" id="minutes" inputmode="numeric"></div>
+    </div>
+    <hr>
+    <div class="kpi">
+      <div class="box"><span>吸引空氣量 V (m³)</span><strong id="V">—</strong></div>
+      <div class="box"><span>標準狀態空氣量 Vn (Nm³)</span><strong id="Vn">—</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⑤ 完成</h2>
+    <div class="btns">
+      <button class="primary" id="exportBtn">匯出已填寫 Excel</button>
+      <button class="secondary" id="clearBtn">清除現場輸入</button>
+    </div>
+    <div id="exportStatus" class="note" style="margin-top:10px">
+      V1 會保留原 Excel 壓縮包內的工作表、格式與圖表檔案，只修改偵測到的現場輸入儲存格。若模板版面不同，匯出前會提示未偵測到的欄位。
+    </div>
+  </div>
+</div>
+
+<script>
+const LSKEY='hvfa_profiles_v1';
+let profiles=JSON.parse(localStorage.getItem(LSKEY)||'{}');
+let currentKey='P3';
+const ids=['instrument','flowmeter','a0','b0','slope','intercept'];
+function el(id){return document.getElementById(id)}
+function n(id){const v=parseFloat(el(id).value);return Number.isFinite(v)?v:null}
+function saveProfiles(){localStorage.setItem(LSKEY,JSON.stringify(profiles))}
+function ensureSeed(){
+  if(!profiles.P3){
+    profiles.P3={instrument:'P3',flowmeter:'FU3',a0:2.0185,b0:-0.0068,slope:0.9501,intercept:0.0592,templateName:'',templateB64:'',mapping:null};
+    saveProfiles();
+  }
+}
+function refreshSelect(){
+  const s=el('profileSelect'); s.innerHTML='';
+  Object.keys(profiles).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k+(profiles[k].flowmeter?' / '+profiles[k].flowmeter:'');s.appendChild(o)});
+  if(profiles[currentKey]) s.value=currentKey; else currentKey=Object.keys(profiles)[0];
+  loadProfile();
+}
+function loadProfile(){
+  const p=profiles[currentKey]||{};
+  ids.forEach(id=>el(id).value=p[id]??'');
+  el('templateName').value=p.templateName||'';
+  el('importStatus').className='status '+(p.templateB64?'':'warn');
+  el('importStatus').textContent=p.templateB64
+    ? `已保存 ${p.templateName}；下次沒有重新校正可直接沿用。`
+    : '尚未保存此儀器的 Excel 範本；仍可先計算，但要匯出 Excel 必須先匯入無密碼 .xlsx。';
+  calc();
+}
+function saveCal(){
+  const old=profiles[currentKey]||{};
+  const inst=el('instrument').value.trim()||currentKey;
+  const p={...old};
+  ids.forEach(id=>p[id]=['instrument','flowmeter'].includes(id)?el(id).value.trim():n(id));
+  if(inst!==currentKey){delete profiles[currentKey]; currentKey=inst}
+  profiles[currentKey]=p; saveProfiles(); refreshSelect();
+}
+function fmt(v,d=3){return Number.isFinite(v)?v.toFixed(d):'—'}
+function calcBlock(prefix){
+  const p=profiles[currentKey]||{};
+  const T=n(prefix+'Temp'), P=n(prefix+'Press'), dh=n(prefix+'DH'), y=n(prefix+'Y'), meter=n(prefix+'Meter');
+  const a0=+p.a0,b0=+p.b0,m=+p.slope,b=+p.intercept;
+  let qstd=null,ycal=null,err=null,q=null;
+  if([T,P,dh,a0,b0].every(Number.isFinite)&&a0!==0){
+    qstd=(Math.sqrt(dh*(P/760)*(298/(T+273)))-b0)/a0;
+  }
+  if(Number.isFinite(qstd)&&Number.isFinite(m)&&Number.isFinite(b)) ycal=m*qstd+b;
+  if(Number.isFinite(y)&&Number.isFinite(ycal)&&ycal!==0) err=(y-ycal)/ycal*100;
+  if(Number.isFinite(meter)&&Number.isFinite(m)&&Number.isFinite(b)&&m!==0) q=(meter-b)/m;
+  el(prefix+'Qstd').textContent=fmt(qstd,2);
+  el(prefix+'Ycal').textContent=fmt(ycal,2);
+  el(prefix+'Err').textContent=Number.isFinite(err)?fmt(err,1)+'%':'—';
+  el(prefix+'Err').className=Number.isFinite(err)?(Math.abs(err)<=7?'pass':'fail'):'';
+  el(prefix+'Q').textContent=fmt(q,3);
+  return {T,P,q};
+}
+function calc(){
+  const a=calcBlock('pre'),b=calcBlock('post');
+  const h=n('hours')??0, min=n('minutes')??0;
+  const total=h*60+min;
+  let V=null,Vn=null;
+  if(total>0 && Number.isFinite(a.q)&&Number.isFinite(b.q)){
+    const qavg=(a.q+b.q)/2;
+    V=qavg*total;
+    if([a.T,b.T,a.P,b.P].every(Number.isFinite)){
+      const Tavg=(a.T+b.T)/2, Pavg=(a.P+b.P)/2;
+      Vn=V*(Pavg/760)*(298/(Tavg+273));
+    }
+  }
+  el('V').textContent=fmt(V,3); el('Vn').textContent=fmt(Vn,3);
+}
+document.querySelectorAll('.live').forEach(x=>x.addEventListener('input',calc));
+el('saveCalBtn').onclick=saveCal;
+el('profileSelect').onchange=e=>{currentKey=e.target.value;loadProfile()};
+el('newBtn').onclick=()=>{
+  const name=prompt('輸入儀器序號，例如 P2、P3、P4：');
+  if(!name)return;
+  currentKey=name.trim().toUpperCase();
+  if(!profiles[currentKey]) profiles[currentKey]={instrument:currentKey,flowmeter:'',a0:null,b0:null,slope:null,intercept:null,templateName:'',templateB64:'',mapping:null};
+  saveProfiles();refreshSelect();
+};
+el('importBtn').onclick=()=>el('fileInput').click();
+el('fileInput').onchange=async e=>{
+  const file=e.target.files[0]; if(!file)return;
+  try{
+    const ab=await file.arrayBuffer();
+    const zip=await JSZip.loadAsync(ab);
+    const info=await inspectWorkbook(zip);
+    const b64=arrayBufferToBase64(ab);
+    const p=profiles[currentKey]||{};
+    p.templateName=file.name;p.templateB64=b64;p.mapping=info.mapping;p.sheetPath=info.sheetPath;
+    if(info.instrument) p.instrument=info.instrument;
+    if(info.flowmeter) p.flowmeter=info.flowmeter;
+    profiles[currentKey]=p;saveProfiles();loadProfile();
+    const found=Object.entries(info.mapping).filter(([,v])=>v).length;
+    el('importStatus').className='status';
+    el('importStatus').textContent=`已匯入 ${file.name}，自動偵測 ${found}/12 個現場輸入格。請在「校正參數」確認斜率/截距等資料。`;
+  }catch(err){
+    alert('這份 Excel 無法直接讀取。若仍有 TSP 密碼，請先在 Excel 開啟後「另存新檔」成無密碼 .xlsx 再匯入。\n\n'+err.message);
+  }finally{e.target.value=''}
+};
+function arrayBufferToBase64(buf){
+  let binary='',bytes=new Uint8Array(buf); for(let i=0;i<bytes.length;i+=0x8000) binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+  return btoa(binary);
+}
+function base64ToUint8(b64){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u}
+async function sharedStrings(zip){
+  const f=zip.file('xl/sharedStrings.xml'); if(!f)return [];
+  const doc=new DOMParser().parseFromString(await f.async('text'),'application/xml');
+  return [...doc.getElementsByTagName('si')].map(si=>[...si.getElementsByTagName('t')].map(t=>t.textContent).join(''));
+}
+function colNum(a){let n=0;for(const c of a)n=n*26+c.charCodeAt(0)-64;return n}
+function cellParts(addr){const m=addr.match(/^([A-Z]+)(\d+)$/);return {col:colNum(m[1]),row:+m[2],letters:m[1]}}
+function numCol(n){let s='';while(n){n--;s=String.fromCharCode(65+n%26)+s;n=Math.floor(n/26)}return s}
+function addr(col,row){return numCol(col)+row}
+async function inspectWorkbook(zip){
+  const sst=await sharedStrings(zip);
+  const wbDoc=new DOMParser().parseFromString(await zip.file('xl/workbook.xml').async('text'),'application/xml');
+  const relDoc=new DOMParser().parseFromString(await zip.file('xl/_rels/workbook.xml.rels').async('text'),'application/xml');
+  const rels={}; [...relDoc.getElementsByTagName('Relationship')].forEach(r=>rels[r.getAttribute('Id')]=r.getAttribute('Target'));
+  let chosen=null;
+  for(const sh of [...wbDoc.getElementsByTagName('sheet')]){
+    const rid=sh.getAttribute('r:id')||sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id');
+    let target=rels[rid]||''; if(!target.startsWith('xl/'))target='xl/'+target.replace(/^\/?/,'');
+    const f=zip.file(target); if(!f)continue;
+    const txt=await f.async('text');
+    if(txt.includes('粒狀物')||!chosen)chosen={path:target,txt};
+    if(txt.includes('粒狀物'))break;
+  }
+  if(!chosen)throw new Error('找不到工作表');
+  const doc=new DOMParser().parseFromString(chosen.txt,'application/xml');
+  const vals={};
+  [...doc.getElementsByTagName('c')].forEach(c=>{
+    const a=c.getAttribute('r'); if(!a)return; const t=c.getAttribute('t');
+    let v=''; const is=c.getElementsByTagName('is')[0], ve=c.getElementsByTagName('v')[0];
+    if(is)v=[...is.getElementsByTagName('t')].map(x=>x.textContent).join('');
+    else if(ve){v=ve.textContent;if(t==='s')v=sst[+v]??v}
+    vals[a]=String(v);
+  });
+  const merges=[...doc.getElementsByTagName('mergeCell')].map(x=>x.getAttribute('ref'));
+  const mapping=detectInputs(vals,merges);
+  return {sheetPath:chosen.path,mapping};
+}
+function mergeEnd(addr0,merges){
+  for(const r of merges){const [a,b]=r.split(':');if(a===addr0)return cellParts(b)} return cellParts(addr0)
+}
+function findCells(vals,needle){return Object.entries(vals).filter(([,v])=>v.replace(/\s/g,'').includes(needle.replace(/\s/g,''))).map(([a])=>a)}
+function detectInputs(vals,merges){
+  // 以右半部的「採樣前 / 採樣後 / 採樣時間」區域與標籤相對位置偵測。
+  const out={preTemp:null,prePress:null,preDH:null,preY:null,preMeter:null,postMeter:null,postTemp:null,postPress:null,postDH:null,postY:null,hours:null,minutes:null};
+  const pre=findCells(vals,'採樣前').map(cellParts).sort((a,b)=>b.col-a.col)[0];
+  const post=findCells(vals,'採樣後').map(cellParts).sort((a,b)=>b.col-a.col)[0];
+  function nearest(label, anchor, mode='right'){
+    if(!anchor)return null;
+    const cs=findCells(vals,label).map(a=>({a,...cellParts(a)}))
+      .filter(x=>x.col>=anchor.col && Math.abs(x.row-anchor.row)<12)
+      .sort((x,y)=>Math.abs(x.row-anchor.row)-Math.abs(y.row-anchor.row) || y.col-x.col);
+    if(!cs.length)return null;
+    const c=cs[0], end=mergeEnd(c.a,merges);
+    return addr(end.col+1,c.row);
+  }
+  if(pre){
+    out.preTemp=nearest('大氣溫度',pre);out.prePress=nearest('大氣壓力',pre);
+    out.preDH=nearest('水柱壓差',pre);out.preY=nearest('浮子流率計讀值',pre);out.preMeter=nearest('流率計讀值',pre);
+  }
+  if(post){
+    out.postTemp=nearest('大氣溫度',post);out.postPress=nearest('大氣壓力',post);
+    out.postDH=nearest('水柱壓差',post);out.postY=nearest('浮子流率計讀值',post);out.postMeter=nearest('流率計讀值',post);
+  }
+  const hour=findCells(vals,'小時').map(a=>({a,...cellParts(a)})).sort((x,y)=>y.col-x.col)[0];
+  const minute=findCells(vals,'分').map(a=>({a,...cellParts(a)})).sort((x,y)=>y.col-x.col)[0];
+  if(hour)out.hours=addr(hour.col-1,hour.row);
+  if(minute)out.minutes=addr(minute.col-1,minute.row);
+  return out;
+}
+function setNumericCell(doc,cellAddr,value){
+  if(value===null||value===undefined||value==='')return;
+  let c=[...doc.getElementsByTagName('c')].find(x=>x.getAttribute('r')===cellAddr);
+  if(!c){
+    const rowNo=cellParts(cellAddr).row;
+    let row=[...doc.getElementsByTagName('row')].find(x=>+x.getAttribute('r')===rowNo);
+    if(!row){row=doc.createElementNS(doc.documentElement.namespaceURI,'row');row.setAttribute('r',rowNo);doc.getElementsByTagName('sheetData')[0].appendChild(row)}
+    c=doc.createElementNS(doc.documentElement.namespaceURI,'c');c.setAttribute('r',cellAddr);row.appendChild(c);
+  }
+  c.removeAttribute('t');
+  let v=c.getElementsByTagName('v')[0]; if(!v){v=doc.createElementNS(doc.documentElement.namespaceURI,'v');c.appendChild(v)}
+  v.textContent=String(value);
+}
+el('exportBtn').onclick=async()=>{
+  const p=profiles[currentKey]||{};
+  if(!p.templateB64){alert('這台儀器還沒有匯入 Excel 範本。');return}
+  try{
+    const zip=await JSZip.loadAsync(base64ToUint8(p.templateB64));
+    const path=p.sheetPath; if(!path||!zip.file(path))throw new Error('找不到原工作表');
+    const txt=await zip.file(path).async('text');
+    const doc=new DOMParser().parseFromString(txt,'application/xml');
+    const map=p.mapping||{};
+    const values={
+      preTemp:n('preTemp'),prePress:n('prePress'),preDH:n('preDH'),preY:n('preY'),preMeter:n('preMeter'),
+      postMeter:n('postMeter'),postTemp:n('postTemp'),postPress:n('postPress'),postDH:n('postDH'),postY:n('postY'),
+      hours:n('hours'),minutes:n('minutes')
+    };
+    const missing=[];
+    Object.entries(values).forEach(([k,v])=>{if(map[k])setNumericCell(doc,map[k],v);else missing.push(k)});
+    // 強制 Excel 開啟時重算公式
+    const wbtxt=await zip.file('xl/workbook.xml').async('text');
+    const wbdoc=new DOMParser().parseFromString(wbtxt,'application/xml');
+    let cp=wbdoc.getElementsByTagName('calcPr')[0];
+    if(!cp){cp=wbdoc.createElementNS(wbdoc.documentElement.namespaceURI,'calcPr');wbdoc.documentElement.appendChild(cp)}
+    cp.setAttribute('fullCalcOnLoad','1');cp.setAttribute('forceFullCalc','1');cp.setAttribute('calcMode','auto');
+    zip.file('xl/workbook.xml',new XMLSerializer().serializeToString(wbdoc));
+    zip.file(path,new XMLSerializer().serializeToString(doc));
+    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    const base=(p.templateName||currentKey+'.xlsx').replace(/\.xlsx$/i,'');
+    a.download=base+'_現場完成.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    el('exportStatus').textContent=missing.length?'已匯出；但有些輸入格未自動偵測：'+missing.join(', ')+'。請先用 Excel 檢查一次。':'已匯出完成。請第一次先用 Excel 對照原表確認所有數字都有落在正確格子。';
+  }catch(err){alert('匯出失敗：'+err.message)}
+};
+el('clearBtn').onclick=()=>{
+  ['preTemp','prePress','preDH','preY','preMeter','postMeter','postTemp','postPress','postDH','postY','hours','minutes'].forEach(id=>el(id).value='');
+  calc();
+};
+ensureSeed();refreshSelect();
+</script>
+</body>
+</html>
