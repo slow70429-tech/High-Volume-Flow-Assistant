@@ -7,59 +7,127 @@
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{
-  --bg:#f3f4f2;--paper:#fff;--ink:#111;--grid:#171717;
-  --input:#eef3df;--accent:#176b4d;--soft:#eef3f5;--danger:#b42318;
+  --bg:#eef2f4;--card:#fff;--ink:#162126;--muted:#6b7780;
+  --input:#eef5df;--accent:#187654;--accent2:#135f45;
+  --line:#d9e1e5;--result:#f7f9fa;--danger:#b42318;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif;color:var(--ink)}
-.wrap{max-width:980px;margin:auto;padding:12px 10px 36px}
-.top{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:10px}
-h1{font-size:22px;margin:0}.ver{font-size:12px;color:#68757d}
-.panel{background:#fff;border:1px solid #d8dedf;border-radius:12px;padding:12px;margin-bottom:12px}
-.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-label{display:block;font-size:12px;color:#4e5b61;margin-bottom:4px}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
+body{padding-bottom:84px}
+.wrap{max-width:680px;margin:0 auto;padding:10px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 8px}
+h1{font-size:20px;margin:0;font-weight:800}.ver{font-size:11px;color:var(--muted)}
+.panel,.sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:0 2px 8px #00000008}
+.toolbar{display:grid;grid-template-columns:1fr;gap:8px}
+label{display:block;font-size:12px;color:#53616a;margin:0 0 4px}
 select,input,button{font:inherit}
-select,input{width:100%;height:44px;border:1px solid #bbc5c9;border-radius:8px;padding:8px 10px;font-size:17px;background:#fff}
-button{min-height:42px;border:0;border-radius:9px;font-weight:700;padding:9px 12px;cursor:pointer}
-.primary{background:var(--accent);color:#fff}.secondary{background:#e7edef;color:#24333a}.danger{background:#fce9e7;color:var(--danger)}
-.buttons{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.buttons button{flex:1;min-width:130px}
-.status{margin-top:8px;padding:8px 10px;background:#eff7f3;border-radius:8px;font-size:12px;color:#315448}
+select,input{width:100%;min-height:48px;border:1px solid #c8d2d7;border-radius:11px;padding:10px 12px;font-size:18px;background:#fff}
+button{border:0;border-radius:11px;padding:12px 14px;font-weight:800;min-height:46px}
+.primary{background:var(--accent);color:#fff}.primary:active{background:var(--accent2)}
+.secondary{background:#e9eef1;color:#263740}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.status{margin-top:8px;padding:9px 10px;background:#edf7f2;border-radius:10px;font-size:12px;line-height:1.45;color:#315448}
 .status.warn{background:#fff4df;color:#704900}
-.sheet{background:var(--paper);padding:8px;border:1px solid #d5d5d5;overflow-x:auto}
-.sheet-title{text-align:center;font-family:"DFKai-SB","標楷體","Microsoft JhengHei";font-size:26px;letter-spacing:1px;margin:10px 0 22px}
-.excel-table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:760px}
-.excel-table td,.excel-table th{border:1px solid var(--grid);text-align:center;vertical-align:middle;padding:5px 4px;font-family:"DFKai-SB","標楷體","Microsoft JhengHei";font-weight:400}
-.excel-table .vertical{writing-mode:vertical-rl;font-size:22px;letter-spacing:5px;width:62px}
-.excel-table .label{font-size:17px}
-.excel-table .unit{font-size:13px}
-.cell-input{background:var(--input)!important;padding:0!important}
-.cell-input input{border:0;border-radius:0;background:transparent;width:100%;height:100%;min-height:42px;text-align:center;font-size:18px;padding:4px}
-.result{font-family:"Microsoft JhengHei"!important;font-weight:700!important;font-size:18px}
-.pass{color:#146c43}.fail{color:#b42318}
-.section-gap{height:26px}
-.time-table{margin-top:34px;width:76%;min-width:620px}
-.time-table td{height:34px}
-.small-note{font-size:12px;color:#6b777d;line-height:1.5;margin-top:8px}
-details{margin-top:10px;border-top:1px dashed #cdd5d8;padding-top:9px}
-summary{font-weight:700;cursor:pointer}
-.calgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+details{margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}
+summary{font-weight:800;cursor:pointer}
+.calgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
 .hidden{display:none}
-@media(max-width:650px){
- .wrap{padding:7px 5px 28px}.top{align-items:center}.top h1{font-size:18px}
- .toolbar{grid-template-columns:1fr 1fr}
- .sheet{padding:4px}
- .sheet-title{font-size:22px;margin:8px 0 14px}
- .excel-table{min-width:690px}
- .time-table{min-width:590px;width:86%}
- .calgrid{grid-template-columns:1fr 1fr}
+
+.sheet{padding:0;background:transparent;border:0;box-shadow:none}
+.sheet-title{font-size:22px;font-weight:800;text-align:center;margin:6px 0 10px}
+
+.excel-table{display:block;width:100%;min-width:0!important;border-collapse:separate;margin:0 0 12px}
+.excel-table tbody,.excel-table tr{display:block;width:100%}
+.excel-table colgroup{display:none}
+.excel-table td,.excel-table th{border:0!important;padding:0;font-family:inherit}
+.excel-table tr{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px;box-shadow:0 1px 4px #00000008}
+.excel-table .vertical{
+  writing-mode:horizontal-tb!important;display:block;width:100%!important;
+  font-size:19px;font-weight:800;letter-spacing:0;text-align:left;
+  padding:2px 0 8px!important;color:var(--accent)
 }
+.excel-table .label,.excel-table .unit{
+  display:block;text-align:left;font-size:13px;color:var(--muted);margin:0 0 5px
+}
+.excel-table .cell-input{display:block;background:transparent!important;margin-bottom:8px}
+.excel-table .cell-input input{
+  border:1px solid #c9d5c0;border-radius:11px;background:var(--input);
+  min-height:52px;text-align:left;font-size:20px;font-weight:700;padding:10px 12px
+}
+.excel-table .result{
+  display:block;background:var(--result);border:1px solid var(--line)!important;border-radius:11px!important;
+  padding:11px 12px!important;text-align:left!important;font-size:21px;font-weight:800!important;min-height:50px
+}
+.pass{color:var(--accent)} .fail{color:var(--danger)}
+.section-gap{height:2px}
+.excel-table tr:not(:first-child){display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.excel-table tr:not(:first-child) .vertical{grid-column:1/-1}
+.excel-table tr:not(:first-child) td[style*="transparent"]{display:none}
+.excel-table tr:first-child{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.excel-table tr:first-child .vertical{grid-column:1/-1}
+
+.time-table{width:100%!important;min-width:0!important;margin-top:8px}
+.time-table tr{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+.time-table tr:first-child{grid-template-columns:1fr 1fr!important}
+.time-table .label,.time-table .unit{margin:0}
+.time-table .cell-input input{min-height:50px}
+.time-table .result{grid-column:1/-1}
+
+.sticky-actions{
+  position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:20
+}
+.sticky-actions .inner{max-width:680px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:8px}
+.sticky-actions button{min-height:50px}
+.small-note{font-size:12px;color:var(--muted);line-height:1.45;margin-top:7px}
+
+@media(min-width:720px){
+  .wrap{padding:14px}
+  .toolbar{grid-template-columns:1fr 1fr}
+}
+
+#projectCode{
+  background:#fff;
+  border:2px solid #b9c8cf;
+}
+#projectCode:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(24,118,84,.12);
+}
+.sticky-actions .inner.v4-actions{
+  grid-template-columns:1fr 1fr auto;
+}
+.share-btn{
+  background:#245e9c;
+}
+.share-btn:active{
+  background:#1e4f84;
+}
+@media(max-width:430px){
+  .sticky-actions .inner.v4-actions{
+    grid-template-columns:1fr 1fr;
+  }
+  .sticky-actions .inner.v4-actions #clearBtn{
+    grid-column:1/-1;
+    min-height:42px;
+  }
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V2.1｜Excel 精度模式</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V4｜手機分享版</div></div>
 
   <div class="panel">
+    <div style="margin-bottom:10px">
+      <label>完整專案編號</label>
+      <input id="projectCode" inputmode="text" autocomplete="off" autocapitalize="characters"
+             placeholder="例如：09509A99-01"
+             style="font-size:22px;font-weight:800;letter-spacing:.5px">
+    </div>
     <div class="toolbar">
       <div><label>目前儀器</label><select id="profile"></select></div>
       <div><label>校正檔</label><input id="templateName" readonly placeholder="尚未匯入"></div>
@@ -177,20 +245,31 @@ summary{font-weight:700;cursor:pointer}
   </div>
 
   <div class="panel" style="margin-top:12px">
-    <div class="buttons">
-      <button class="primary" id="exportBtn">匯出已填寫 Excel</button>
-      <button class="secondary" id="clearBtn">清除現場輸入</button>
-    </div>
-    <div id="exportStatus" class="small-note">匯出會以目前儲存的校正 Excel 為底，只回填現場綠色格；原格式、校正資料、公式與圖表都保留。</div>
+    <div id="exportStatus" class="small-note">輸入完整專案編號後，可直接下載或分享同名 Excel；原格式、校正資料、公式與圖表都保留。</div>
+  </div>
+</div>
+
+<div class="sticky-actions">
+  <div class="inner v4-actions">
+    <button class="primary" id="exportBtn">下載 Excel</button>
+    <button class="primary share-btn" id="shareBtn">分享 Excel</button>
+    <button class="secondary" id="clearBtn">清除</button>
   </div>
 </div>
 
 <script>
 const KEY='hvfa_profiles_v2';
+const PROJECT_KEY='hvfa_project_code_v1';
 let profiles=JSON.parse(localStorage.getItem(KEY)||'{}');
 let current=Object.keys(profiles)[0]||'P3';
 const $=id=>document.getElementById(id);
 const num=id=>{const v=parseFloat($(id).value);return Number.isFinite(v)?v:null};
+$('projectCode').value=localStorage.getItem(PROJECT_KEY)||'';
+$('projectCode').addEventListener('input',()=>{
+  const v=$('projectCode').value.trim().toUpperCase();
+  $('projectCode').value=v;
+  localStorage.setItem(PROJECT_KEY,v);
+});
 const round=(v,d)=>{if(!Number.isFinite(v))return null;const p=10**d;return Math.round((v+Number.EPSILON)*p)/p};
 function b64(buf){let s='',u=new Uint8Array(buf);for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode(...u.subarray(i,i+0x8000));return btoa(s)}
 function u8(s){let b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
@@ -363,39 +442,101 @@ function setCell(doc,addr,value){
   if(!v){v=doc.createElementNS(ns,'v');c.appendChild(v)}
   v.textContent=String(value);
 }
+async function buildExcelFile(){
+  const p=profile();
+  if(!p.templateB64) throw new Error('請先匯入這台儀器的校正 Excel。');
+
+  const projectCode=$('projectCode').value.trim().toUpperCase();
+  if(!projectCode) throw new Error('請先輸入完整專案編號，例如 09509A99-01。');
+
+  const safeName=projectCode.replace(/[\\/:*?"<>|]/g,'-');
+  const filename=safeName+'.xlsx';
+
+  const zip=await JSZip.loadAsync(u8(p.templateB64));
+  const path=p.sheetPath||'xl/worksheets/sheet1.xml';
+  const doc=new DOMParser().parseFromString(await zip.file(path).async('text'),'application/xml');
+
+  const map={
+    N9:num('preTemp'),P9:num('prePress'),N10:num('preDH'),P10:num('preY'),M13:num('preMeter'),
+    M18:num('postMeter'),N21:num('postTemp'),P21:num('postPress'),N22:num('postDH'),P22:num('postY'),
+    M26:num('hours'),O26:num('minutes')
+  };
+  Object.entries(map).forEach(([a,v])=>setCell(doc,a,v));
+  zip.file(path,new XMLSerializer().serializeToString(doc));
+
+  const wbPath='xl/workbook.xml';
+  const wbdoc=new DOMParser().parseFromString(await zip.file(wbPath).async('text'),'application/xml');
+  let cp=wbdoc.getElementsByTagName('calcPr')[0];
+  if(!cp){
+    cp=wbdoc.createElementNS(wbdoc.documentElement.namespaceURI,'calcPr');
+    wbdoc.documentElement.appendChild(cp);
+  }
+  cp.setAttribute('fullPrecision','0');
+  cp.setAttribute('calcMode','auto');
+  cp.setAttribute('fullCalcOnLoad','1');
+  cp.setAttribute('forceFullCalc','1');
+  zip.file(wbPath,new XMLSerializer().serializeToString(wbdoc));
+  if(zip.file('xl/calcChain.xml')) zip.remove('xl/calcChain.xml');
+
+  const blob=await zip.generateAsync({
+    type:'blob',
+    compression:'DEFLATE',
+    mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+
+  return {blob,filename};
+}
+
 $('exportBtn').onclick=async()=>{
-  const p=profile();if(!p.templateB64){alert('請先匯入這台儀器的校正 Excel。');return}
   try{
-    const zip=await JSZip.loadAsync(u8(p.templateB64));
-    const path=p.sheetPath||'xl/worksheets/sheet1.xml';
-    const doc=new DOMParser().parseFromString(await zip.file(path).async('text'),'application/xml');
-    const map={
-      N9:num('preTemp'),P9:num('prePress'),N10:num('preDH'),P10:num('preY'),M13:num('preMeter'),
-      M18:num('postMeter'),N21:num('postTemp'),P21:num('postPress'),N22:num('postDH'),P22:num('postY'),
-      M26:num('hours'),O26:num('minutes')
-    };
-    Object.entries(map).forEach(([a,v])=>setCell(doc,a,v));
-    zip.file(path,new XMLSerializer().serializeToString(doc));
-
-    // 保留原本 fullPrecision=0，並要求 Excel 開啟時重新計算。
-    const wbPath='xl/workbook.xml';
-    const wbdoc=new DOMParser().parseFromString(await zip.file(wbPath).async('text'),'application/xml');
-    let cp=wbdoc.getElementsByTagName('calcPr')[0];
-    if(!cp){cp=wbdoc.createElementNS(wbdoc.documentElement.namespaceURI,'calcPr');wbdoc.documentElement.appendChild(cp)}
-    cp.setAttribute('fullPrecision','0');
-    cp.setAttribute('calcMode','auto');
-    cp.setAttribute('fullCalcOnLoad','1');
-    cp.setAttribute('forceFullCalc','1');
-    zip.file(wbPath,new XMLSerializer().serializeToString(wbdoc));
-    if(zip.file('xl/calcChain.xml'))zip.remove('xl/calcChain.xml');
-
-    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download=(p.templateName||current+'.xlsx').replace(/\.xlsx$/i,'')+'_現場完成.xlsx';
-    a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-    $('exportStatus').textContent='已匯出。第一次請回 Excel 對照確認一次；之後相同格式就可直接使用。';
-  }catch(err){alert('匯出失敗：'+err.message)}
+    const {blob,filename}=await buildExcelFile();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    $('exportStatus').textContent=`已下載：${filename}`;
+  }catch(err){
+    alert(err.message||('匯出失敗：'+err));
+  }
 };
+
+$('shareBtn').onclick=async()=>{
+  try{
+    const {blob,filename}=await buildExcelFile();
+    const file=new File(
+      [blob],
+      filename,
+      {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+    );
+
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+      await navigator.share({
+        files:[file],
+        title:filename,
+        text:'高量採集器流率驗算紀錄'
+      });
+      $('exportStatus').textContent=`已開啟分享：${filename}`;
+    }else{
+      // 瀏覽器不支援檔案分享時，自動改為下載
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+      $('exportStatus').textContent='目前瀏覽器不支援直接分享檔案，已改為下載 Excel。';
+      alert('目前這個瀏覽器不支援直接分享檔案，已改為下載 Excel。');
+    }
+  }catch(err){
+    if(err && err.name==='AbortError') return;
+    alert(err.message||('分享失敗：'+err));
+  }
+};
+
 $('clearBtn').onclick=()=>{
   ['preTemp','prePress','preDH','preMeter','postMeter','postTemp','postPress','postDH','hours','minutes'].forEach(id=>$(id).value='');
   $('preY').value='1.20';$('postY').value='1.20';calc();
