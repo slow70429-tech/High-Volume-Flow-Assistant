@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>高量採集器流率驗算助手 V7</title>
+<title>高量採集器流率驗算助手 V7.1</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{
@@ -89,18 +89,100 @@ summary{font-weight:800;cursor:pointer}
   .sticky-actions .inner{grid-template-columns:1fr 1fr}
   .sticky-actions #clearBtn{grid-column:1/-1;min-height:40px}
 }
+
+.quick-code{
+  display:grid;
+  grid-template-columns:1.25fr 28px .85fr 20px .75fr;
+  gap:5px;
+  align-items:end;
+  margin-bottom:8px;
+}
+.quick-code input{
+  text-align:center;
+  font-size:20px;
+  font-weight:800;
+  min-height:46px;
+  padding:5px 4px;
+}
+.fixed-a,.fixed-dash{
+  height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  font-weight:900;
+}
+.code-preview{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:7px;
+  align-items:center;
+  background:#f4f7f8;
+  border:1px solid #d7dee2;
+  border-radius:9px;
+  padding:7px 8px;
+  margin-bottom:5px;
+}
+.preview-label{
+  display:block;
+  font-size:10px;
+  color:#68767e;
+  margin-bottom:1px;
+}
+#projectPreview{
+  font-size:19px;
+  letter-spacing:.3px;
+}
+.copy-subject{
+  min-height:40px;
+  padding:7px 11px;
+  white-space:nowrap;
+}
+.subject-preview{
+  font-size:11px;
+  color:#526169;
+  padding:2px 2px 9px;
+  overflow-wrap:anywhere;
+}
+@media(max-width:390px){
+  .quick-code{grid-template-columns:1.2fr 22px .8fr 15px .7fr;gap:3px}
+  .quick-code input{font-size:18px}
+  #projectPreview{font-size:17px}
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7｜5台自動辨識版</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.1｜現場快速版</div></div>
 
   <div class="panel">
-    <div style="margin-bottom:10px">
-      <label>完整專案編號</label>
-      <input id="projectCode" inputmode="text" autocomplete="off" autocapitalize="characters"
-             placeholder="例如：09509A88-01"
-             style="font-size:22px;font-weight:800;letter-spacing:.5px">
+    <div class="quick-code">
+      <div>
+        <label>專案編號</label>
+        <input id="projectBase" inputmode="numeric" maxlength="5" placeholder="09509">
+      </div>
+      <div class="fixed-a">A</div>
+      <div>
+        <label>次數</label>
+        <input id="projectCount" inputmode="numeric" placeholder="102">
+      </div>
+      <div class="fixed-dash">-</div>
+      <div>
+        <label>點位</label>
+        <input id="projectPoint" inputmode="numeric" maxlength="2" placeholder="02">
+      </div>
+    </div>
+
+    <div class="code-preview">
+      <div>
+        <span class="preview-label">完整編號</span>
+        <strong id="projectPreview">—</strong>
+      </div>
+      <button class="secondary copy-subject" id="copySubjectBtn">複製主旨</button>
+    </div>
+    <div class="subject-preview">
+      郵件主旨：<strong id="subjectPreview">高量採集器_</strong>
     </div>
     <div class="toolbar">
       <div><label>目前儀器</label><select id="profile"><option>讀取中...</option></select></div>
@@ -254,7 +336,7 @@ summary{font-weight:800;cursor:pointer}
   </div>
 
   <div class="panel" style="margin-top:12px">
-    <div id="exportStatus" class="small-note">輸入完整專案編號後，匯出檔名會自動接上目前校正檔的原始名稱；原格式、公式與圖表都保留。</div>
+    <div id="exportStatus" class="small-note">輸入「5碼專案＋次數＋點位」後會自動組成完整編號；匯出檔名自動接上校正檔原始名稱，並可一鍵複製郵件主旨。</div>
   </div>
 </div>
 
@@ -272,7 +354,9 @@ const num=id=>{const v=parseFloat($(id).value);return Number.isFinite(v)?v:null}
 const round=(v,d)=>{if(!Number.isFinite(v))return null;const p=10**d;return Math.round((v+Number.EPSILON)*p)/p};
 const show=(v,d)=>Number.isFinite(v)?v.toFixed(d):'—';
 
-const PROJECT_KEY='hvfa_project_code_v7';
+const PROJECT_BASE_KEY='hvfa_project_base_v71';
+const PROJECT_COUNT_KEY='hvfa_project_count_v71';
+const PROJECT_POINT_KEY='hvfa_project_point_v71';
 const SELECT_KEY='hvfa_selected_profile_v7';
 const CACHE_KEY='hvfa_github_calibration_files_v7';
 
@@ -285,13 +369,85 @@ let profiles={};
 let current='';
 let currentTemplateBytes=null;
 
-// 專案編號記憶
-$('projectCode').value=localStorage.getItem(PROJECT_KEY)||'';
-$('projectCode').addEventListener('input',()=>{
-  const v=$('projectCode').value.trim().toUpperCase();
-  $('projectCode').value=v;
-  localStorage.setItem(PROJECT_KEY,v);
+// 現場快速編號：5碼 + A + 次數 + - + 2碼點位
+$('projectBase').value=localStorage.getItem(PROJECT_BASE_KEY)||'';
+$('projectCount').value=localStorage.getItem(PROJECT_COUNT_KEY)||'';
+$('projectPoint').value=localStorage.getItem(PROJECT_POINT_KEY)||'';
+
+function digitsOnly(v){return String(v||'').replace(/\D/g,'');}
+
+function buildProjectCode(requireComplete=false){
+  const base=digitsOnly($('projectBase').value).slice(0,5);
+  const count=digitsOnly($('projectCount').value);
+  const pointRaw=digitsOnly($('projectPoint').value).slice(0,2);
+  const point=pointRaw?pointRaw.padStart(2,'0'):'';
+
+  if(requireComplete){
+    if(base.length!==5)throw new Error('專案編號請輸入 5 碼，例如 09509。');
+    if(!count)throw new Error('請輸入次數，例如 102。');
+    if(!point)throw new Error('請輸入點位，例如 02。');
+  }
+  if(!base&&!count&&!point)return '';
+  return `${base}${base?'A':''}${count}${point?'-'+point:''}`;
+}
+
+function updateProjectUI(){
+  const base=digitsOnly($('projectBase').value).slice(0,5);
+  const count=digitsOnly($('projectCount').value);
+  const point=digitsOnly($('projectPoint').value).slice(0,2);
+
+  $('projectBase').value=base;
+  $('projectCount').value=count;
+  $('projectPoint').value=point;
+
+  localStorage.setItem(PROJECT_BASE_KEY,base);
+  localStorage.setItem(PROJECT_COUNT_KEY,count);
+  localStorage.setItem(PROJECT_POINT_KEY,point);
+
+  const code=buildProjectCode(false);
+  $('projectPreview').textContent=code||'—';
+  $('subjectPreview').textContent='高量採集器_'+code;
+}
+
+['projectBase','projectCount','projectPoint'].forEach(id=>{
+  $(id).addEventListener('input',updateProjectUI);
 });
+
+$('projectPoint').addEventListener('blur',()=>{
+  const v=digitsOnly($('projectPoint').value);
+  if(v)$('projectPoint').value=v.padStart(2,'0').slice(-2);
+  updateProjectUI();
+});
+
+$('copySubjectBtn').addEventListener('click',async()=>{
+  try{
+    const code=buildProjectCode(true);
+    const subject='高量採集器_'+code;
+    await navigator.clipboard.writeText(subject);
+    $('copySubjectBtn').textContent='已複製 ✓';
+    setTimeout(()=>$('copySubjectBtn').textContent='複製主旨',1400);
+  }catch(err){
+    // iOS/部分瀏覽器 clipboard API 受限時的備援
+    try{
+      const code=buildProjectCode(true);
+      const subject='高量採集器_'+code;
+      const ta=document.createElement('textarea');
+      ta.value=subject;
+      ta.style.position='fixed';
+      ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.focus();ta.select();
+      const ok=document.execCommand('copy');
+      ta.remove();
+      if(!ok)throw new Error('copy failed');
+      $('copySubjectBtn').textContent='已複製 ✓';
+      setTimeout(()=>$('copySubjectBtn').textContent='複製主旨',1400);
+    }catch{
+      alert(err.message||'主旨複製失敗');
+    }
+  }
+});
+updateProjectUI();
 
 // 由檔名抓 (P3-FU3)
 function parsePair(name){
@@ -641,8 +797,7 @@ function setCell(doc,addr,value){
 }
 
 function safeProjectCode(){
-  const raw=$('projectCode').value.trim().toUpperCase();
-  if(!raw)throw new Error('請先輸入完整專案編號，例如 09509A88-01。');
+  const raw=buildProjectCode(true);
   return raw.replace(/[\\/:*?"<>|]/g,'-');
 }
 
