@@ -93,7 +93,7 @@ summary{font-weight:800;cursor:pointer}
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V5｜Excel 濃縮版</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V6｜跨裝置版</div></div>
 
   <div class="panel">
     <div style="margin-bottom:10px">
@@ -107,11 +107,11 @@ summary{font-weight:800;cursor:pointer}
       <div><label>校正檔</label><input id="templateName" readonly placeholder="尚未匯入"></div>
     </div>
     <div class="buttons">
-      <button class="primary" id="importBtn">匯入 / 更新校正 Excel</button>
+      <button class="primary" id="importBtn">本機測試 / 更新校正檔</button>
       <button class="secondary" id="addBtn">新增儀器</button>
     </div>
     <input id="fileInput" type="file" accept=".xlsx" class="hidden">
-    <div id="status" class="status warn">請匯入已解除 TSP 密碼的 .xlsx。匯入一次後，沒有重新校正就可繼續沿用。</div>
+    <div id="status" class="status warn">P3 / FU3 已內建網站校正範本；手機與電腦開啟同一網址都可直接使用。</div>
 
     <details>
       <summary>查看目前校正參數</summary>
@@ -272,8 +272,27 @@ summary{font-weight:800;cursor:pointer}
 <script>
 const KEY='hvfa_profiles_v2';
 const PROJECT_KEY='hvfa_project_code_v1';
+const BUILTIN_PROFILES={
+  P3:{
+    instrument:'P3',
+    flowmeter:'FU3',
+    a0:2.0185,
+    b0:-0.0068,
+    slope:0.9501,
+    intercept:0.0592,
+    templateUrl:'P3-FU3.xlsx',
+    templateName:'P3-FU3.xlsx',
+    sheetPath:'xl/worksheets/sheet1.xml',
+    builtin:true
+  }
+};
 let profiles=JSON.parse(localStorage.getItem(KEY)||'{}');
-let current=Object.keys(profiles)[0]||'P3';
+// 網站內建校正資料優先更新，但保留使用者本機新增的其他儀器。
+Object.entries(BUILTIN_PROFILES).forEach(([k,v])=>{
+  profiles[k]={...(profiles[k]||{}),...v};
+});
+localStorage.setItem(KEY,JSON.stringify(profiles));
+let current=profiles.P3?'P3':(Object.keys(profiles)[0]||'P3');
 const $=id=>document.getElementById(id);
 const num=id=>{const v=parseFloat($(id).value);return Number.isFinite(v)?v:null};
 $('projectCode').value=localStorage.getItem(PROJECT_KEY)||'';
@@ -299,10 +318,13 @@ function load(){
   const p=profile();
   ['instrument','flowmeter','a0','b0','slope','intercept'].forEach(id=>$(id).value=p[id]??'');
   $('templateName').value=p.templateName||'';
-  $('status').className='status'+(p.templateB64?'':' warn');
-  $('status').textContent=p.templateB64
-    ? `已保存 ${p.instrument||current}${p.flowmeter?' / '+p.flowmeter:''} 的 ${p.templateName}。沒有重新校正就直接續用。`
-    : '尚未匯入校正 Excel。請先匯入已解除 TSP 密碼的 .xlsx。';
+  const hasTemplate=!!(p.templateB64||p.templateUrl);
+  $('status').className='status'+(hasTemplate?'':' warn');
+  $('status').textContent=p.templateUrl
+    ? `${p.instrument||current}${p.flowmeter?' / '+p.flowmeter:''} 校正範本已跟著網站載入，手機不需另外匯入。`
+    : (p.templateB64
+      ? `已保存 ${p.instrument||current}${p.flowmeter?' / '+p.flowmeter:''} 的 ${p.templateName}。`
+      : '尚未匯入校正 Excel。');
   calc();
 }
 function saveCal(){
@@ -454,9 +476,19 @@ function setCell(doc,addr,value){
   if(!v){v=doc.createElementNS(ns,'v');c.appendChild(v)}
   v.textContent=String(value);
 }
+async function getTemplateBytes(p){
+  if(p.templateB64) return u8(p.templateB64);
+  if(p.templateUrl){
+    const res=await fetch(p.templateUrl,{cache:'no-store'});
+    if(!res.ok) throw new Error('找不到網站上的校正範本：'+p.templateUrl);
+    return new Uint8Array(await res.arrayBuffer());
+  }
+  throw new Error('這台儀器目前沒有校正 Excel 範本。');
+}
+
 async function buildExcelFile(){
   const p=profile();
-  if(!p.templateB64) throw new Error('請先匯入這台儀器的校正 Excel。');
+  if(!p.templateB64 && !p.templateUrl) throw new Error('這台儀器目前沒有校正 Excel 範本。');
 
   const projectCode=$('projectCode').value.trim().toUpperCase();
   if(!projectCode) throw new Error('請先輸入完整專案編號，例如 09509A99-01。');
@@ -464,7 +496,7 @@ async function buildExcelFile(){
   const safeName=projectCode.replace(/[\\/:*?"<>|]/g,'-');
   const filename=safeName+'.xlsx';
 
-  const zip=await JSZip.loadAsync(u8(p.templateB64));
+  const zip=await JSZip.loadAsync(await getTemplateBytes(p));
   const path=p.sheetPath||'xl/worksheets/sheet1.xml';
   const doc=new DOMParser().parseFromString(await zip.file(path).async('text'),'application/xml');
 
@@ -554,10 +586,11 @@ $('clearBtn').onclick=()=>{
   $('preY').value='1.20';$('postY').value='1.20';calc();
 };
 if(!profiles.P3){
-  profiles.P3={instrument:'P3',flowmeter:'FU3',a0:2.0185,b0:-0.0068,slope:0.9501,intercept:0.0592,templateB64:'',templateName:''};
+  profiles.P3={...BUILTIN_PROFILES.P3};
   save();
 }
-current=Object.keys(profiles)[0];refresh();
+current=profiles.P3?'P3':Object.keys(profiles)[0];
+refresh();
 </script>
 </body>
 </html>
