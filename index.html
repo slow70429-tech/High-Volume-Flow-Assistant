@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>高量採集器流率驗算助手 V7.3</title>
+<title>高量採集器流率驗算助手 V7.4</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{
@@ -291,7 +291,7 @@ summary{font-weight:800;cursor:pointer}
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.3｜Excel 排列版</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.4｜完整清除版</div></div>
 
   <div class="panel">
     <div class="quick-code">
@@ -1065,12 +1065,29 @@ $('shareBtn').addEventListener('click',async()=>{
 });
 
 $('clearBtn').addEventListener('click',()=>{
+  // 專案資料全部清除，連同瀏覽器記憶一起刪除
+  $('projectBase').value='';
+  $('projectCount').value='';
+  $('projectPoint').value='';
+  localStorage.removeItem(PROJECT_BASE_KEY);
+  localStorage.removeItem(PROJECT_COUNT_KEY);
+  localStorage.removeItem(PROJECT_POINT_KEY);
+  updateProjectUI();
+
+  // 現場輸入全部清除
   ['preTemp','prePress','preDH','preMeter',
    'postMeter','postTemp','postPress','postDH',
    'hours','minutes'].forEach(id=>$(id).value='');
+
+  // 浮子讀值保留現場預設值 1.20
   $('preY').value='1.20';
   $('postY').value='1.20';
+
+  $('exportStatus').textContent='';
   calc();
+
+  // 清除後游標直接回到專案編號，方便下一筆開始
+  $('projectBase').focus();
 });
 
 // Start
