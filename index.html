@@ -7,119 +7,93 @@
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{
-  --bg:#eef2f4;--card:#fff;--ink:#162126;--muted:#6b7780;
-  --input:#eef5df;--accent:#187654;--accent2:#135f45;
-  --line:#d9e1e5;--result:#f7f9fa;--danger:#b42318;
+  --bg:#f3f5f6;--paper:#fff;--ink:#12191d;--muted:#69767e;
+  --grid:#9aa4aa;--input:#eef4df;--accent:#13704d;--blue:#2868a9;
+  --line:#d7dee2;--danger:#b42318;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+html,body{margin:0;background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
-body{padding-bottom:84px}
-.wrap{max-width:680px;margin:0 auto;padding:10px}
-.top{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 8px}
-h1{font-size:20px;margin:0;font-weight:800}.ver{font-size:11px;color:var(--muted)}
-.panel,.sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:0 2px 8px #00000008}
-.toolbar{display:grid;grid-template-columns:1fr;gap:8px}
-label{display:block;font-size:12px;color:#53616a;margin:0 0 4px}
+body{padding-bottom:86px}
+.wrap{max-width:620px;margin:auto;padding:8px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:4px 2px 8px}
+h1{font-size:19px;margin:0;font-weight:800}.ver{font-size:11px;color:var(--muted)}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:9px}
+.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+label{display:block;font-size:12px;color:#55636b;margin:0 0 4px}
 select,input,button{font:inherit}
-select,input{width:100%;min-height:48px;border:1px solid #c8d2d7;border-radius:11px;padding:10px 12px;font-size:18px;background:#fff}
-button{border:0;border-radius:11px;padding:12px 14px;font-weight:800;min-height:46px}
-.primary{background:var(--accent);color:#fff}.primary:active{background:var(--accent2)}
-.secondary{background:#e9eef1;color:#263740}
-.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.status{margin-top:8px;padding:9px 10px;background:#edf7f2;border-radius:10px;font-size:12px;line-height:1.45;color:#315448}
+select,input{width:100%;min-height:44px;border:1px solid #c5cfd4;border-radius:8px;padding:8px 10px;font-size:17px;background:#fff}
+button{border:0;border-radius:9px;padding:10px 12px;font-weight:800;min-height:44px}
+.primary{background:var(--accent);color:#fff}.secondary{background:#e9eef1;color:#263740}.share-btn{background:var(--blue);color:#fff}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.status{margin-top:7px;padding:8px 9px;background:#edf7f2;border-radius:8px;font-size:11px;line-height:1.4;color:#315448}
 .status.warn{background:#fff4df;color:#704900}
-details{margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}
+details{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
 summary{font-weight:800;cursor:pointer}
-.calgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.calgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
 .hidden{display:none}
 
-.sheet{padding:0;background:transparent;border:0;box-shadow:none}
-.sheet-title{font-size:22px;font-weight:800;text-align:center;margin:6px 0 10px}
+#projectCode{font-size:21px;font-weight:800;letter-spacing:.4px;border:2px solid #bcc8ce}
+#projectCode:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(19,112,77,.1)}
 
-.excel-table{display:block;width:100%;min-width:0!important;border-collapse:separate;margin:0 0 12px}
-.excel-table tbody,.excel-table tr{display:block;width:100%}
-.excel-table colgroup{display:none}
-.excel-table td,.excel-table th{border:0!important;padding:0;font-family:inherit}
-.excel-table tr{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:8px;box-shadow:0 1px 4px #00000008}
-.excel-table .vertical{
-  writing-mode:horizontal-tb!important;display:block;width:100%!important;
-  font-size:19px;font-weight:800;letter-spacing:0;text-align:left;
-  padding:2px 0 8px!important;color:var(--accent)
-}
-.excel-table .label,.excel-table .unit{
-  display:block;text-align:left;font-size:13px;color:var(--muted);margin:0 0 5px
-}
-.excel-table .cell-input{display:block;background:transparent!important;margin-bottom:8px}
-.excel-table .cell-input input{
-  border:1px solid #c9d5c0;border-radius:11px;background:var(--input);
-  min-height:52px;text-align:left;font-size:20px;font-weight:700;padding:10px 12px
-}
-.excel-table .result{
-  display:block;background:var(--result);border:1px solid var(--line)!important;border-radius:11px!important;
-  padding:11px 12px!important;text-align:left!important;font-size:21px;font-weight:800!important;min-height:50px
-}
-.pass{color:var(--accent)} .fail{color:var(--danger)}
-.section-gap{height:2px}
-.excel-table tr:not(:first-child){display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
-.excel-table tr:not(:first-child) .vertical{grid-column:1/-1}
-.excel-table tr:not(:first-child) td[style*="transparent"]{display:none}
-.excel-table tr:first-child{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
-.excel-table tr:first-child .vertical{grid-column:1/-1}
+.sheet-title{text-align:center;font-size:21px;font-weight:800;margin:8px 0 10px}
 
-.time-table{width:100%!important;min-width:0!important;margin-top:8px}
-.time-table tr{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
-.time-table tr:first-child{grid-template-columns:1fr 1fr!important}
-.time-table .label,.time-table .unit{margin:0}
-.time-table .cell-input input{min-height:50px}
-.time-table .result{grid-column:1/-1}
+/* Excel-like compact form */
+.excel-form{background:#fff;border:1px solid #cfd6da;border-radius:10px;overflow:hidden;margin-bottom:10px}
+.excel-head{display:grid;grid-template-columns:62px 1fr;border-bottom:1px solid var(--grid)}
+.excel-side{
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;
+  writing-mode:vertical-rl;letter-spacing:3px;background:#fafafa;border-right:1px solid var(--grid)
+}
+.excel-main{display:grid}
+.xrow{display:grid;border-bottom:1px solid var(--grid)}
+.xrow:last-child{border-bottom:0}
+.x2{grid-template-columns:1fr 1fr}
+.x3{grid-template-columns:1fr 1fr 1fr}
+.x4{grid-template-columns:1fr 1fr 1fr 1fr}
+.xcell{min-height:58px;border-right:1px solid var(--grid);padding:5px 6px;display:flex;flex-direction:column;justify-content:center}
+.xcell:last-child{border-right:0}
+.xlabel{font-size:12px;color:#3c484f;text-align:center;line-height:1.25;margin-bottom:4px}
+.xunit{font-size:10px;color:#66727a}
+.xinput{background:var(--input)}
+.xinput input{border:0;border-radius:0;background:transparent;text-align:center;font-size:19px;font-weight:700;min-height:38px;padding:2px}
+.xresult{font-size:20px;font-weight:800;text-align:center}
+.xresult.small{font-size:18px}
+.pass{color:var(--accent)}.fail{color:var(--danger)}
+.subhead{font-size:12px;font-weight:800;color:#46545c;background:#f6f8f8;text-align:center;padding:4px;border-bottom:1px solid var(--grid)}
 
-.sticky-actions{
-  position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);
-  backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:20
-}
-.sticky-actions .inner{max-width:680px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:8px}
-.sticky-actions button{min-height:50px}
-.small-note{font-size:12px;color:var(--muted);line-height:1.45;margin-top:7px}
+.time-box{background:#fff;border:1px solid #cfd6da;border-radius:10px;overflow:hidden;margin-top:10px}
+.time-row{display:grid;grid-template-columns:1.25fr .9fr .9fr .9fr;border-bottom:1px solid var(--grid)}
+.time-row:last-child{border-bottom:0}
+.tcell{min-height:48px;border-right:1px solid var(--grid);padding:5px 7px;display:flex;align-items:center;justify-content:center;text-align:center}
+.tcell:last-child{border-right:0}
+.tlabel{font-size:13px}
+.tinput{background:var(--input)}
+.tinput input{border:0;background:transparent;text-align:center;font-size:19px;font-weight:700;padding:2px}
+.tresult{font-size:19px;font-weight:800}
 
-@media(min-width:720px){
-  .wrap{padding:14px}
-  .toolbar{grid-template-columns:1fr 1fr}
-}
+.small-note{font-size:11px;color:var(--muted);line-height:1.4}
+.sticky-actions{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);border-top:1px solid var(--line);padding:7px 8px calc(7px + env(safe-area-inset-bottom));z-index:20}
+.sticky-actions .inner{max-width:620px;margin:auto;display:grid;grid-template-columns:1fr 1fr auto;gap:7px}
 
-#projectCode{
-  background:#fff;
-  border:2px solid #b9c8cf;
-}
-#projectCode:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(24,118,84,.12);
-}
-.sticky-actions .inner.v4-actions{
-  grid-template-columns:1fr 1fr auto;
-}
-.share-btn{
-  background:#245e9c;
-}
-.share-btn:active{
-  background:#1e4f84;
-}
 @media(max-width:430px){
-  .sticky-actions .inner.v4-actions{
-    grid-template-columns:1fr 1fr;
-  }
-  .sticky-actions .inner.v4-actions #clearBtn{
-    grid-column:1/-1;
-    min-height:42px;
-  }
+  .toolbar{grid-template-columns:1fr}
+  .excel-head{grid-template-columns:48px 1fr}
+  .excel-side{font-size:16px}
+  .xcell{min-height:55px;padding:4px}
+  .xlabel{font-size:11px}
+  .xinput input{font-size:18px}
+  .xresult{font-size:19px}
+  .time-row{grid-template-columns:1.2fr .8fr .7fr .8fr}
+  .sticky-actions .inner{grid-template-columns:1fr 1fr}
+  .sticky-actions #clearBtn{grid-column:1/-1;min-height:40px}
 }
-
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V4｜手機分享版</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V5｜Excel 濃縮版</div></div>
 
   <div class="panel">
     <div style="margin-bottom:10px">
@@ -153,95 +127,133 @@ summary{font-weight:800;cursor:pointer}
     </details>
   </div>
 
-  <div class="sheet">
-    <div class="sheet-title">粒狀物流率驗算紀錄</div>
+  <div class="sheet-title">粒狀物流率驗算紀錄</div>
 
-    <table class="excel-table">
-      <colgroup>
-        <col style="width:7%"><col style="width:12%"><col style="width:14%"><col style="width:16%">
-        <col style="width:16%"><col style="width:14%"><col style="width:21%">
-      </colgroup>
-      <tr>
-        <td class="vertical" rowspan="4">採樣前</td>
-        <td class="label" colspan="2">大氣溫度(℃)</td>
-        <td class="cell-input"><input id="preTemp" inputmode="decimal"></td>
-        <td class="label">大氣壓力(mmHg)</td>
-        <td class="cell-input"><input id="prePress" inputmode="decimal"></td>
-        <td class="label">流量偏差百分比% (≤±7%)</td>
-      </tr>
-      <tr>
-        <td class="label" rowspan="2">查核流率</td>
-        <td class="label">水柱壓差(△H)</td>
-        <td class="cell-input"><input id="preDH" inputmode="decimal"></td>
-        <td class="label">浮子流率計讀值(Y)</td>
-        <td class="cell-input"><input id="preY" inputmode="decimal" value="1.20"></td>
-        <td class="result" id="preErr" rowspan="2">—</td>
-      </tr>
-      <tr>
-        <td class="unit">實際流量 Qstd (m³/min)</td>
-        <td class="result" id="preQstd">—</td>
-        <td class="unit">迴歸之流量 Ycal (m³/min)</td>
-        <td class="result" id="preYcal">—</td>
-      </tr>
-      <tr>
-        <td class="label">流率計讀值</td>
-        <td class="cell-input"><input id="preMeter" inputmode="decimal"></td>
-        <td class="label">校正流率（Q）m³/min</td>
-        <td class="result" id="preQ" colspan="2">—</td>
-        <td style="border-color:transparent"></td>
-      </tr>
-    </table>
+  <div class="excel-form">
+    <div class="excel-head">
+      <div class="excel-side">採樣前</div>
+      <div class="excel-main">
+        <div class="xrow x3">
+          <div class="xcell xinput">
+            <div class="xlabel">大氣溫度(℃)</div>
+            <input id="preTemp" inputmode="decimal">
+          </div>
+          <div class="xcell xinput">
+            <div class="xlabel">大氣壓力(mmHg)</div>
+            <input id="prePress" inputmode="decimal">
+          </div>
+          <div class="xcell">
+            <div class="xlabel">流量偏差百分比<br>(≤±7%)</div>
+            <div class="xresult" id="preErr">—</div>
+          </div>
+        </div>
 
-    <div class="section-gap"></div>
+        <div class="subhead">查核流率</div>
+        <div class="xrow x4">
+          <div class="xcell xinput">
+            <div class="xlabel">水柱壓差 ΔH<br><span class="xunit">(inH₂O)</span></div>
+            <input id="preDH" inputmode="decimal">
+          </div>
+          <div class="xcell xinput">
+            <div class="xlabel">浮子流率計讀值 Y</div>
+            <input id="preY" inputmode="decimal" value="1.20">
+          </div>
+          <div class="xcell">
+            <div class="xlabel">實際流量 Qstd<br><span class="xunit">(m³/min)</span></div>
+            <div class="xresult small" id="preQstd">—</div>
+          </div>
+          <div class="xcell">
+            <div class="xlabel">迴歸之流量 Ycal<br><span class="xunit">(m³/min)</span></div>
+            <div class="xresult small" id="preYcal">—</div>
+          </div>
+        </div>
 
-    <table class="excel-table">
-      <colgroup>
-        <col style="width:7%"><col style="width:12%"><col style="width:14%"><col style="width:16%">
-        <col style="width:16%"><col style="width:14%"><col style="width:21%">
-      </colgroup>
-      <tr>
-        <td class="vertical" rowspan="4">採樣後</td>
-        <td class="label">流率計讀值</td>
-        <td class="cell-input"><input id="postMeter" inputmode="decimal"></td>
-        <td class="label">校正流率（Q）m³/min</td>
-        <td class="result" id="postQ" colspan="2">—</td>
-        <td style="border-color:transparent"></td>
-      </tr>
-      <tr>
-        <td class="label" colspan="2">大氣溫度(℃)</td>
-        <td class="cell-input"><input id="postTemp" inputmode="decimal"></td>
-        <td class="label">大氣壓力(mmHg)</td>
-        <td class="cell-input"><input id="postPress" inputmode="decimal"></td>
-        <td class="label">流量偏差百分比% (≤±7%)</td>
-      </tr>
-      <tr>
-        <td class="label" rowspan="2">查核流率</td>
-        <td class="label">水柱壓差(△H)</td>
-        <td class="cell-input"><input id="postDH" inputmode="decimal"></td>
-        <td class="label">浮子流率計讀值(Y)</td>
-        <td class="cell-input"><input id="postY" inputmode="decimal" value="1.20"></td>
-        <td class="result" id="postErr" rowspan="2">—</td>
-      </tr>
-      <tr>
-        <td class="unit">實際流量 Qstd (m³/min)</td>
-        <td class="result" id="postQstd">—</td>
-        <td class="unit">迴歸之流量 Ycal (m³/min)</td>
-        <td class="result" id="postYcal">—</td>
-      </tr>
-    </table>
+        <div class="xrow x2">
+          <div class="xcell xinput">
+            <div class="xlabel">流率計讀值</div>
+            <input id="preMeter" inputmode="decimal">
+          </div>
+          <div class="xcell">
+            <div class="xlabel">校正流率 Q <span class="xunit">(m³/min)</span></div>
+            <div class="xresult" id="preQ">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <table class="excel-table time-table">
-      <colgroup><col style="width:22%"><col style="width:18%"><col style="width:24%"><col style="width:18%"><col style="width:18%"></colgroup>
-      <tr>
-        <td class="label">採樣時間</td>
-        <td class="cell-input"><input id="hours" inputmode="numeric"></td>
-        <td class="label">小時</td>
-        <td class="cell-input"><input id="minutes" inputmode="numeric"></td>
-        <td class="label">分</td>
-      </tr>
-      <tr><td class="label">吸引空氣量（V）</td><td class="result" id="V" colspan="2">—</td><td class="unit" colspan="2">m³</td></tr>
-      <tr><td class="label">吸引空氣量（Vn）</td><td class="result" id="Vn" colspan="2">—</td><td class="unit" colspan="2">Nm³</td></tr>
-    </table>
+  <div class="excel-form">
+    <div class="excel-head">
+      <div class="excel-side">採樣後</div>
+      <div class="excel-main">
+        <div class="xrow x2">
+          <div class="xcell xinput">
+            <div class="xlabel">流率計讀值</div>
+            <input id="postMeter" inputmode="decimal">
+          </div>
+          <div class="xcell">
+            <div class="xlabel">校正流率 Q <span class="xunit">(m³/min)</span></div>
+            <div class="xresult" id="postQ">—</div>
+          </div>
+        </div>
+
+        <div class="xrow x3">
+          <div class="xcell xinput">
+            <div class="xlabel">大氣溫度(℃)</div>
+            <input id="postTemp" inputmode="decimal">
+          </div>
+          <div class="xcell xinput">
+            <div class="xlabel">大氣壓力(mmHg)</div>
+            <input id="postPress" inputmode="decimal">
+          </div>
+          <div class="xcell">
+            <div class="xlabel">流量偏差百分比<br>(≤±7%)</div>
+            <div class="xresult" id="postErr">—</div>
+          </div>
+        </div>
+
+        <div class="subhead">查核流率</div>
+        <div class="xrow x4">
+          <div class="xcell xinput">
+            <div class="xlabel">水柱壓差 ΔH<br><span class="xunit">(inH₂O)</span></div>
+            <input id="postDH" inputmode="decimal">
+          </div>
+          <div class="xcell xinput">
+            <div class="xlabel">浮子流率計讀值 Y</div>
+            <input id="postY" inputmode="decimal" value="1.20">
+          </div>
+          <div class="xcell">
+            <div class="xlabel">實際流量 Qstd<br><span class="xunit">(m³/min)</span></div>
+            <div class="xresult small" id="postQstd">—</div>
+          </div>
+          <div class="xcell">
+            <div class="xlabel">迴歸之流量 Ycal<br><span class="xunit">(m³/min)</span></div>
+            <div class="xresult small" id="postYcal">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="time-box">
+    <div class="time-row">
+      <div class="tcell tlabel">採樣時間</div>
+      <div class="tcell tinput"><input id="hours" inputmode="numeric"></div>
+      <div class="tcell tlabel">小時</div>
+      <div class="tcell tinput"><input id="minutes" inputmode="numeric"></div>
+    </div>
+    <div class="time-row">
+      <div class="tcell tlabel">吸引空氣量（V）</div>
+      <div class="tcell tresult" id="V">—</div>
+      <div class="tcell tlabel">m³</div>
+      <div class="tcell"></div>
+    </div>
+    <div class="time-row">
+      <div class="tcell tlabel">吸引空氣量（Vn）</div>
+      <div class="tcell tresult" id="Vn">—</div>
+      <div class="tcell tlabel">Nm³</div>
+      <div class="tcell"></div>
+    </div>
   </div>
 
   <div class="panel" style="margin-top:12px">
