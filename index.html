@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>高量採集器流率驗算助手 V7.6</title>
+<title>高量採集器流率驗算助手 V7.7</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{
@@ -291,7 +291,7 @@ summary{font-weight:800;cursor:pointer}
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.6｜iPhone Next 強制順序版</div></div>
+  <div class="top"><h1>高量採集器流率驗算助手</h1><div class="ver">V7.7｜Vn 小數一位版</div></div>
 
   <div class="panel">
     <div class="quick-code">
@@ -903,7 +903,7 @@ function calc(){
        Number.isFinite(pre.Pa)&&Number.isFinite(post.Pa)){
       const avgTemp=pre.T*0.5+post.T*0.5;
       const avgPress=pre.Pa*0.5+post.Pa*0.5;
-      Vn=sampledVolume*(273/(273+avgTemp))*(avgPress/760);
+      Vn=Math.round((sampledVolume*(273/(273+avgTemp))*(avgPress/760))*10)/10;
     }
   }
 
@@ -912,7 +912,7 @@ function calc(){
     $('Vn').textContent='—';
   }else{
     $('V').textContent=h>3&&Number.isFinite(V)?show(V,2):'---';
-    $('Vn').textContent=h<3&&Number.isFinite(Vn)?show(Vn,2):'---';
+    $('Vn').textContent=h<3&&Number.isFinite(Vn)?show(Vn,1):'---';
   }
 }
 
@@ -972,6 +972,16 @@ async function buildExcelFile(){
     M26:num('hours'),O26:num('minutes')
   };
   Object.entries(map).forEach(([a,v])=>setCell(doc,a,v));
+
+  // Vn (M28) 的公式結果固定四捨五入到小數 1 位
+  const vnCell=[...doc.getElementsByTagName('c')].find(c=>c.getAttribute('r')==='M28');
+  if(vnCell){
+    const f=vnCell.getElementsByTagName('f')[0];
+    if(f && f.textContent && !/^ROUND\(/i.test(f.textContent.trim())){
+      f.textContent='ROUND('+f.textContent+',1)';
+    }
+  }
+
   zip.file(path,new XMLSerializer().serializeToString(doc));
 
   // Excel 開啟時重新計算，並保留原工作簿的「以顯示精度計算」。
